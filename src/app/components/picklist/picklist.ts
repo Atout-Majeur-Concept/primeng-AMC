@@ -1,4 +1,4 @@
-import { NgModule, Component, ElementRef, AfterContentInit, AfterViewChecked, Input, Output, ContentChildren, QueryList, TemplateRef, EventEmitter, ViewChild, ChangeDetectionStrategy, ViewEncapsulation, ChangeDetectorRef} from '@angular/core';
+import { NgModule, Component, ElementRef, AfterContentInit, AfterViewChecked, Input, Output, ContentChildren, QueryList, TemplateRef, EventEmitter, ViewChild, ChangeDetectionStrategy, ViewEncapsulation, ChangeDetectorRef, forwardRef, HostListener} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {ButtonModule} from 'primeng/button';
 import {SharedModule,PrimeTemplate,FilterService} from 'primeng/api';
@@ -6,6 +6,7 @@ import {DomHandler} from 'primeng/dom';
 import {RippleModule} from 'primeng/ripple';
 import {CdkDragDrop, DragDropModule, moveItemInArray, transferArrayItem} from '@angular/cdk/drag-drop';
 import {ObjectUtils, UniqueComponentId} from 'primeng/utils';
+import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 
 @Component({
     selector: 'p-pickList',
@@ -95,8 +96,13 @@ import {ObjectUtils, UniqueComponentId} from 'primeng/utils';
     changeDetection: ChangeDetectionStrategy.OnPush,
     encapsulation: ViewEncapsulation.None,
     styleUrls: ['./picklist.css']
+    providers : [{
+        provide: NG_VALUE_ACCESSOR,
+        multi: true,
+        useExisting: forwardRef(() => PickList),
+    }]
 })
-export class PickList implements AfterViewChecked,AfterContentInit {
+export class PickList implements AfterViewChecked,AfterContentInit, ControlValueAccessor {
 
     @Input() source: any[];
 
@@ -181,6 +187,45 @@ export class PickList implements AfterViewChecked,AfterContentInit {
     @ViewChild('targetFilter') targetFilterViewChild: ElementRef;
 
     @ContentChildren(PrimeTemplate) templates: QueryList<any>;
+
+    private onChange = (_:any) => {};
+    private onTouched = () => {};
+
+    @HostListener('onMoveToSource')
+    @HostListener('onMoveAllToSource')
+    @HostListener('onMoveAllToTarget')
+    @HostListener('onMoveToTarget')
+    onChangeHandler(){
+        this.onChange(this.target);
+    }
+
+    @HostListener('onBlur')
+    onBlur(){
+        this.onTouched();
+    }
+
+    writeValue(obj: any): void {
+        if(this.target && this.target.length > 0){
+            console.log(this.target);
+            this.moveAllLeft();
+        }else{
+            this.target = [];
+        }
+        this.selectedItemsSource = obj
+        this.moveRight();
+        
+    }
+    registerOnChange(fn: any): void {
+        this.onChange = fn;
+    }
+    registerOnTouched(fn: any): void {
+        this.onTouched = fn;
+    }
+    setDisabledState?(isDisabled: boolean): void {
+        this.disabled = isDisabled;
+        this.cd.detectChanges();
+    }
+
 
     public itemTemplate: TemplateRef<any>;
 

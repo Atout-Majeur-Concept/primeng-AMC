@@ -3,7 +3,9 @@ import {CommonModule} from '@angular/common';
 import {SharedModule,Header, PrimeTemplate} from 'primeng/api'
 import {DomHandler} from 'primeng/dom';
 import {NG_VALUE_ACCESSOR, ControlValueAccessor} from '@angular/forms';
-import * as Quill from "quill";
+import * as quill from "quill";
+
+const Quill = quill.default || quill;
 
 export const EDITOR_VALUE_ACCESSOR: any = {
   provide: NG_VALUE_ACCESSOR,

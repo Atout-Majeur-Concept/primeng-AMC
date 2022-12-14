@@ -33,7 +33,7 @@ import { Subscription } from 'rxjs';
                             <ng-container *ngIf="!emptyMessageTemplate; else emptyFilter">
                                     {{emptyMessageLabel}}
                             </ng-container>
-                            <ng-container #emptyFilter *ngTemplateOutlet="emptyMessageTemplate"></ng-container>
+                            <ng-template #emptyFilter [ngTemplateOutlet]="emptyMessageTemplate"></ng-template>
                         </div>
                     </div>
                 </div>

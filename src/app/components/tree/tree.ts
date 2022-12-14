@@ -1,5 +1,5 @@
 import {NgModule,Component,Input,AfterContentInit,OnDestroy,Output,EventEmitter,OnInit,OnChanges,
-    ContentChildren,QueryList,TemplateRef,Inject,ElementRef,forwardRef,ChangeDetectionStrategy,SimpleChanges, ViewEncapsulation, ViewChild} from '@angular/core';
+    ContentChildren,QueryList,TemplateRef,Inject,ElementRef,forwardRef,ChangeDetectionStrategy,SimpleChanges, ViewEncapsulation, ViewChild, HostListener} from '@angular/core';
 import {CdkVirtualScrollViewport, ScrollingModule} from '@angular/cdk/scrolling';
 import {Optional} from '@angular/core';
 import {CommonModule} from '@angular/common';
@@ -12,6 +12,7 @@ import {BlockableUI} from 'primeng/api';
 import {ObjectUtils} from 'primeng/utils';
 import {DomHandler} from 'primeng/dom';
 import {RippleModule} from 'primeng/ripple';
+import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 
 @Component({
     selector: 'p-treeNode',
@@ -23,12 +24,12 @@ import {RippleModule} from 'primeng/ripple';
                 <div class="p-treenode-content" [style.paddingLeft]="(level * indentation)  + 'rem'" (click)="onNodeClick($event)" (contextmenu)="onNodeRightClick($event)" (touchend)="onNodeTouchEnd()"
                     (drop)="onDropNode($event)" (dragover)="onDropNodeDragOver($event)" (dragenter)="onDropNodeDragEnter($event)" (dragleave)="onDropNodeDragLeave($event)"
                     [draggable]="tree.draggableNodes" (dragstart)="onDragStart($event)" (dragend)="onDragStop($event)" [attr.tabindex]="0"
-                    [ngClass]="{'p-treenode-selectable':tree.selectionMode && node.selectable !== false,'p-treenode-dragover':draghoverNode, 'p-highlight':isSelected()}" role="treeitem"
+                    [ngClass]="{'p-treenode-selectable':tree.selectionMode && node.selectable !== false && tree.disableAllTree !== true,'p-treenode-dragover':draghoverNode, 'p-highlight':isSelected()}" role="treeitem"
                     (keydown)="onKeyDown($event)" [attr.aria-posinset]="this.index + 1" [attr.aria-expanded]="this.node.expanded" [attr.aria-selected]="isSelected()" [attr.aria-label]="node.label">
                     <button type="button" class="p-tree-toggler p-link" (click)="toggle($event)" pRipple tabindex="-1">
                         <span class="p-tree-toggler-icon pi pi-fw" [ngClass]="{'pi-chevron-right':!node.expanded,'pi-chevron-down':node.expanded}"></span>
                     </button>
-                    <div class="p-checkbox p-component" [ngClass]="{'p-checkbox-disabled': node.selectable === false}" *ngIf="tree.selectionMode == 'checkbox'" [attr.aria-checked]="isSelected()">
+                    <div class="p-checkbox p-component" [ngClass]="{'p-checkbox-disabled': node.selectable === false || tree.disableAllTree === true}" *ngIf="tree.selectionMode == 'checkbox'" [attr.aria-checked]="isSelected()">
                         <div class="p-checkbox-box" [ngClass]="{'p-highlight': isSelected(), 'p-indeterminate': node.partialSelected}">
                             <span class="p-checkbox-icon pi" [ngClass]="{'pi-check':isSelected(),'pi-minus':node.partialSelected}"></span>
                         </div>
@@ -543,7 +544,7 @@ export class UITreeNode implements OnInit {
                 <ng-container *ngIf="!emptyMessageTemplate; else emptyFilter">
                     {{emptyMessageLabel}}
                 </ng-container>
-                <ng-container #emptyFilter *ngTemplateOutlet="emptyMessageTemplate"></ng-container>
+                <ng-template #emptyFilter [ngTemplateOutlet]="emptyMessageTemplate"></ng-template>
             </div>
             <ng-container *ngTemplateOutlet="footerTemplate"></ng-container>
         </div>
@@ -559,7 +560,7 @@ export class UITreeNode implements OnInit {
                 <ng-container *ngIf="!emptyMessageTemplate; else emptyFilter">
                     {{emptyMessageLabel}}
                 </ng-container>
-                <ng-container #emptyFilter *ngTemplateOutlet="emptyMessageTemplate"></ng-container>
+                <ng-template #emptyFilter [ngTemplateOutlet]="emptyMessageTemplate"></ng-template>
             </div>
             <ng-container *ngTemplateOutlet="footerTemplate"></ng-container>
         </div>
@@ -567,8 +568,13 @@ export class UITreeNode implements OnInit {
     changeDetection: ChangeDetectionStrategy.Default,
     encapsulation: ViewEncapsulation.None,
     styleUrls: ['./tree.css']
+    providers: [{
+        provide: NG_VALUE_ACCESSOR,
+        multi: true,
+        useExisting: forwardRef(() => Tree),
+    }]
 })
-export class Tree implements OnInit,AfterContentInit,OnChanges,OnDestroy,BlockableUI {
+export class Tree implements OnInit, AfterContentInit, OnChanges, OnDestroy, BlockableUI, ControlValueAccessor {
 
     @Input() value: TreeNode[];
 
@@ -688,6 +694,71 @@ export class Tree implements OnInit,AfterContentInit,OnChanges,OnDestroy,Blockab
 
     constructor(public el: ElementRef, @Optional() public dragDropService: TreeDragDropService, public config: PrimeNGConfig) {}
 
+    public onModelChange: Function = () => { };
+
+    public onModelTouched: Function = () => { };
+
+    public disableAllTree: boolean = false;
+
+    writeValue(obj: any): void {
+        // this.selection = [];
+        this.selection = obj;
+
+        this.value.forEach(node => {
+            let countChildInSelection = (node: TreeNode) => {
+                let count = 0;
+                node.children?.forEach(c => {
+                    this.findIndexInSelection(c) != -1 ? count++ : '';
+                });
+                return count;
+            }
+
+            let hasOnePartialChild = (node: TreeNode) => {
+                return node.children?.filter(n => n.partialSelected === true).length > 0;
+            }
+            let recursive = (node: TreeNode[]) => {
+                node?.forEach(n => {
+                    let inSelection = this.findIndexInSelection(n) != -1;
+                    if (inSelection) {
+                        this.propagateDown(n, true);
+                    } else {
+                        recursive(n.children);
+                        let countChild = countChildInSelection(n);
+                        if (countChild != 0 && countChild != n.children?.length || hasOnePartialChild(n)) {
+                            n.partialSelected = true;
+                            n.expanded = true;
+                        }
+                    }
+                })
+
+            }
+            recursive([node]);
+        })
+
+        this.updateSerializedValue();
+    }
+
+    registerOnChange(fn: any): void {
+        this.onModelChange = fn;
+    }
+    registerOnTouched(fn: any): void {
+        this.onModelTouched = fn;
+    }
+    setDisabledState?(isDisabled: boolean): void {
+        this.disableAllTree = isDisabled;
+    }
+
+    @HostListener('selectionChange',['$event'])
+    selectionChangeHandler(event) {
+        this.selection = event;
+        this.onModelChange(event);
+    }
+
+    @HostListener('blur')
+    blurHandler() {
+        this.onModelTouched();
+    }
+
     ngOnInit() {
         if (this.droppableNodes) {
             this.dragStartSubscription = this.dragDropService.dragStart$.subscribe(
@@ -782,7 +853,7 @@ export class Tree implements OnInit,AfterContentInit,OnChanges,OnDestroy,Blockab
     onNodeClick(event, node: TreeNode) {
         let eventTarget = (<Element> event.target);
 
-        if (DomHandler.hasClass(eventTarget, 'p-tree-toggler') || DomHandler.hasClass(eventTarget, 'p-tree-toggler-icon')) {
+        if (DomHandler.hasClass(eventTarget, 'p-tree-toggler') || DomHandler.hasClass(eventTarget, 'p-tree-toggler-icon') || this.disableAllTree === true) {
             return;
         }
         else if (this.selectionMode) {

@@ -1,0 +1,1780 @@
+diff --git a/package.json b/package.json
+index 60888746d..119885a51 100644
+--- a/package.json
++++ b/package.json
+@@ -1,6 +1,6 @@
+ {
+   "name": "primeng",
+-  "version": "11.4.2",
++  "version": "11.4.2-AMC-4",
+   "license": "MIT",
+   "scripts": {
+     "ng": "ng",
+@@ -69,5 +69,8 @@
+     "web-animations-js": "^2.3.2",
+     "xlsx": "^0.15.1",
+     "zone.js": "~0.10.2"
++  },
++  "publishConfig": {
++    "registry": "https://forge/nexus/repository/npm-release/"
+   }
+ }
+diff --git a/src/app/components/autocomplete/autocomplete.ts b/src/app/components/autocomplete/autocomplete.ts
+index de0e34110..04e7f8a9e 100644
+--- a/src/app/components/autocomplete/autocomplete.ts
++++ b/src/app/components/autocomplete/autocomplete.ts
+@@ -76,7 +76,7 @@ export const AUTOCOMPLETE_VALUE_ACCESSOR: any = {
+                             <ng-container *ngIf="!emptyTemplate; else empty">
+                                 {{emptyMessageLabel}}
+                             </ng-container>
+-                            <ng-container #empty *ngTemplateOutlet="emptyTemplate"></ng-container>
++                            <ng-template #empty [ngTemplateOutlet]="emptyTemplate"></ng-template>
+                         </li>
+                     </ng-template>
+                 </ul>
+diff --git a/src/app/components/calendar/calendar.ts b/src/app/components/calendar/calendar.ts
+index e8bc59acd..3694ec528 100644
+--- a/src/app/components/calendar/calendar.ts
++++ b/src/app/components/calendar/calendar.ts
+@@ -445,7 +445,7 @@ export class Calendar implements OnInit,OnDestroy,ControlValueAccessor {
+ 
+     set defaultDate(defaultDate: Date) {
+         this._defaultDate = defaultDate;
+-        
++
+         if (this.initialized) {
+             const date = defaultDate||new Date();
+             this.currentMonth = date.getMonth();
+@@ -2567,7 +2567,7 @@ export class Calendar implements OnInit,OnDestroy,ControlValueAccessor {
+ 
+     onWindowResize() {
+         if (this.overlayVisible && !DomHandler.isAndroid()) {
+-            this.hideOverlay();
++            //this.hideOverlay();
+         }
+     }
+ 
+diff --git a/src/app/components/cascadeselect/cascadeselect.ts b/src/app/components/cascadeselect/cascadeselect.ts
+index f01db49af..1e31b450f 100644
+--- a/src/app/components/cascadeselect/cascadeselect.ts
++++ b/src/app/components/cascadeselect/cascadeselect.ts
+@@ -30,7 +30,7 @@ export const CASCADESELECT_VALUE_ACCESSOR: any = {
+                         <span class="p-cascadeselect-group-icon pi pi-angle-right" *ngIf="isOptionGroup(option)"></span>
+                     </div>
+                     <p-cascadeSelectSub *ngIf="isOptionGroup(option) && isOptionActive(option)" class="p-cascadeselect-sublist" [selectionPath]="selectionPath" [options]="getOptionGroupChildren(option)"
+-                        [optionLabel]="optionLabel" [optionValue]="optionValue" [level]="level + 1" (onSelect)="onOptionSelect($event)" (onOptionGroupSelect)="onOptionGroupSelect()"
++                        [optionLabel]="optionLabel" [optionValue]="optionValue" [level]="level + 1" (onSelect)="onOptionSelect($event)" (onOptionGroupSelect)="onOptionGroupSelect($event)"
+                         [optionGroupLabel]="optionGroupLabel" [optionGroupChildren]="optionGroupChildren" [parentActive]="isOptionActive(option)" [dirty]="dirty" [optionTemplate]="optionTemplate">
+                     </p-cascadeSelectSub>
+                 </li>
+diff --git a/src/app/components/chart/chart.ts b/src/app/components/chart/chart.ts
+index 242cf5ba0..a770dc8da 100644
+--- a/src/app/components/chart/chart.ts
++++ b/src/app/components/chart/chart.ts
+@@ -1,6 +1,6 @@
+-import {NgModule,Component,ElementRef,AfterViewInit,OnDestroy,Input,Output,EventEmitter,ChangeDetectionStrategy, ViewEncapsulation} from '@angular/core';
+-import {CommonModule} from '@angular/common';
+-import * as Chart from 'chart.js';
++import { NgModule, Component, ElementRef, AfterViewInit, OnDestroy, Input, Output, EventEmitter, ChangeDetectionStrategy, ViewEncapsulation } from '@angular/core';
++import { CommonModule } from '@angular/common';
++import { Chart } from 'chart.js';
+ 
+ @Component({
+     selector: 'p-chart',
+@@ -17,30 +17,30 @@ export class UIChart implements AfterViewInit, OnDestroy {
+     @Input() type: string;
+ 
+     @Input() plugins: any[] = [];
+-    
++
+     @Input() width: string;
+-    
++
+     @Input() height: string;
+ 
+     @Input() responsive: boolean = true;
+-    
++
+     @Output() onDataSelect: EventEmitter<any> = new EventEmitter();
+ 
+     initialized: boolean;
+-    
++
+     _data: any;
+ 
+     _options: any = {};
+ 
+     chart: any;
+ 
+-    constructor(public el: ElementRef) {}
+-    
++    constructor(public el: ElementRef) { }
++
+     @Input() get data(): any {
+         return this._data;
+     }
+ 
+-    set data(val:any) {
++    set data(val: any) {
+         this._data = val;
+         this.reinit();
+     }
+@@ -49,7 +49,7 @@ export class UIChart implements AfterViewInit, OnDestroy {
+         return this._options;
+     }
+ 
+-    set options(val:any) {
++    set options(val: any) {
+         this._options = val;
+         this.reinit();
+     }
+@@ -64,17 +64,17 @@ export class UIChart implements AfterViewInit, OnDestroy {
+             let element = this.chart.getElementAtEvent(event);
+             let dataset = this.chart.getDatasetAtEvent(event);
+             if (element && element[0] && dataset) {
+-                this.onDataSelect.emit({originalEvent: event, element: element[0], dataset: dataset});
++                this.onDataSelect.emit({ originalEvent: event, element: element[0], dataset: dataset });
+             }
+         }
+     }
+ 
+     initChart() {
+-        let opts = this.options||{};
++        let opts = this.options || {};
+         opts.responsive = this.responsive;
+ 
+         // allows chart to resize in responsive mode
+-        if (opts.responsive&&(this.height||this.width)) {
++        if (opts.responsive && (this.height || this.width)) {
+             opts.maintainAspectRatio = false;
+         }
+ 
+@@ -85,34 +85,34 @@ export class UIChart implements AfterViewInit, OnDestroy {
+             plugins: this.plugins
+         });
+     }
+-    
++
+     getCanvas() {
+         return this.el.nativeElement.children[0].children[0];
+     }
+-    
++
+     getBase64Image() {
+         return this.chart.toBase64Image();
+     }
+-    
++
+     generateLegend() {
+         if (this.chart) {
+             return this.chart.generateLegend();
+         }
+     }
+-    
++
+     refresh() {
+         if (this.chart) {
+             this.chart.update();
+         }
+     }
+-    
++
+     reinit() {
+         if (this.chart) {
+             this.chart.destroy();
+             this.initChart();
+         }
+     }
+-    
++
+     ngOnDestroy() {
+         if (this.chart) {
+             this.chart.destroy();
+diff --git a/src/app/components/dataview/dataview.ts b/src/app/components/dataview/dataview.ts
+index 25a59ae15..84fb5561d 100644
+--- a/src/app/components/dataview/dataview.ts
++++ b/src/app/components/dataview/dataview.ts
+@@ -33,7 +33,7 @@ import { Subscription } from 'rxjs';
+                             <ng-container *ngIf="!emptyMessageTemplate; else emptyFilter">
+                                     {{emptyMessageLabel}}
+                             </ng-container>
+-                            <ng-container #emptyFilter *ngTemplateOutlet="emptyMessageTemplate"></ng-container>
++                            <ng-template #emptyFilter [ngTemplateOutlet]="emptyMessageTemplate"></ng-template>
+                         </div>
+                     </div>
+                 </div>
+diff --git a/src/app/components/dropdown/dropdown.ts b/src/app/components/dropdown/dropdown.ts
+index bf57463f0..f2e005b83 100644
+--- a/src/app/components/dropdown/dropdown.ts
++++ b/src/app/components/dropdown/dropdown.ts
+@@ -1,20 +1,22 @@
+-import {ScrollingModule, CdkVirtualScrollViewport} from '@angular/cdk/scrolling';
+-import {NgModule,Component,ElementRef,OnInit,AfterViewInit,AfterContentInit,AfterViewChecked,OnDestroy,Input,Output,Renderer2,EventEmitter,ContentChildren,
+-        QueryList,ViewChild,TemplateRef,forwardRef,ChangeDetectorRef,NgZone,ViewRef,ChangeDetectionStrategy, ViewEncapsulation} from '@angular/core';
+-import {trigger,style,transition,animate,AnimationEvent} from '@angular/animations';
+-import {CommonModule} from '@angular/common';
+-import {PrimeNGConfig, SelectItem, TranslationKeys} from 'primeng/api';
+-import {SharedModule,PrimeTemplate, FilterService} from 'primeng/api';
+-import {DomHandler, ConnectedOverlayScrollHandler} from 'primeng/dom';
+-import {ObjectUtils} from 'primeng/utils';
+-import {NG_VALUE_ACCESSOR, ControlValueAccessor} from '@angular/forms';
+-import {TooltipModule} from 'primeng/tooltip';
+-import {RippleModule} from 'primeng/ripple';
++import { ScrollingModule, CdkVirtualScrollViewport } from '@angular/cdk/scrolling';
++import {
++    NgModule, Component, ElementRef, OnInit, AfterViewInit, AfterContentInit, AfterViewChecked, OnDestroy, Input, Output, Renderer2, EventEmitter, ContentChildren,
++    QueryList, ViewChild, TemplateRef, forwardRef, ChangeDetectorRef, NgZone, ViewRef, ChangeDetectionStrategy, ViewEncapsulation
++} from '@angular/core';
++import { trigger, style, transition, animate, AnimationEvent } from '@angular/animations';
++import { CommonModule } from '@angular/common';
++import { PrimeNGConfig, SelectItem, TranslationKeys } from 'primeng/api';
++import { SharedModule, PrimeTemplate, FilterService } from 'primeng/api';
++import { DomHandler, ConnectedOverlayScrollHandler } from 'primeng/dom';
++import { ObjectUtils } from 'primeng/utils';
++import { NG_VALUE_ACCESSOR, ControlValueAccessor } from '@angular/forms';
++import { TooltipModule } from 'primeng/tooltip';
++import { RippleModule } from 'primeng/ripple';
+ 
+ export const DROPDOWN_VALUE_ACCESSOR: any = {
+-  provide: NG_VALUE_ACCESSOR,
+-  useExisting: forwardRef(() => Dropdown),
+-  multi: true
++    provide: NG_VALUE_ACCESSOR,
++    useExisting: forwardRef(() => Dropdown),
++    multi: true
+ };
+ 
+ @Component({
+@@ -122,13 +124,13 @@ export class DropdownItem {
+                             <ng-container *ngIf="!emptyFilterTemplate && !emptyTemplate; else emptyFilter">
+                                 {{emptyFilterMessageLabel}}
+                             </ng-container>
+-                            <ng-container #emptyFilter *ngTemplateOutlet="emptyFilterTemplate || emptyTemplate"></ng-container>
++                            <ng-template #emptyFilter [ngTemplateOutlet]="emptyFilterTemplate || emptyTemplate"></ng-template>
+                         </li>
+                         <li *ngIf="!filterValue && isEmpty()" class="p-dropdown-empty-message">
+                             <ng-container *ngIf="!emptyTemplate; else empty">
+                                 {{emptyMessageLabel}}
+                             </ng-container>
+-                            <ng-container #empty *ngTemplateOutlet="emptyTemplate"></ng-container>
++                            <ng-template #empty [ngTemplateOutlet]="emptyTemplate"></ng-template>
+                         </li>
+                     </ul>
+                 </div>
+@@ -139,7 +141,7 @@ export class DropdownItem {
+     animations: [
+         trigger('overlayAnimation', [
+             transition(':enter', [
+-                style({opacity: 0, transform: 'scaleY(0.8)'}),
++                style({ opacity: 0, transform: 'scaleY(0.8)' }),
+                 animate('{{showTransitionParams}}')
+             ]),
+             transition(':leave', [
+@@ -156,7 +158,7 @@ export class DropdownItem {
+     encapsulation: ViewEncapsulation.None,
+     styleUrls: ['./dropdown.css']
+ })
+-export class Dropdown implements OnInit,AfterViewInit,AfterContentInit,AfterViewChecked,OnDestroy,ControlValueAccessor {
++export class Dropdown implements OnInit, AfterViewInit, AfterContentInit, AfterViewChecked, OnDestroy, ControlValueAccessor {
+ 
+     @Input() scrollHeight: string = '200px';
+ 
+@@ -322,9 +324,9 @@ export class Dropdown implements OnInit,AfterViewInit,AfterContentInit,AfterView
+ 
+     value: any;
+ 
+-    onModelChange: Function = () => {};
++    onModelChange: Function = () => { };
+ 
+-    onModelTouched: Function = () => {};
++    onModelTouched: Function = () => { };
+ 
+     optionsToDisplay: any[];
+ 
+@@ -370,42 +372,42 @@ export class Dropdown implements OnInit,AfterViewInit,AfterContentInit,AfterView
+ 
+     preventModelTouched: boolean;
+ 
+-    constructor(public el: ElementRef, public renderer: Renderer2, public cd: ChangeDetectorRef, public zone: NgZone, public filterService: FilterService, public config: PrimeNGConfig) {}
++    constructor(public el: ElementRef, public renderer: Renderer2, public cd: ChangeDetectorRef, public zone: NgZone, public filterService: FilterService, public config: PrimeNGConfig) { }
+ 
+     ngAfterContentInit() {
+         this.templates.forEach((item) => {
+-            switch(item.getType()) {
++            switch (item.getType()) {
+                 case 'item':
+                     this.itemTemplate = item.template;
+-                break;
++                    break;
+ 
+                 case 'selectedItem':
+                     this.selectedItemTemplate = item.template;
+-                break;
++                    break;
+ 
+                 case 'header':
+                     this.headerTemplate = item.template;
+-                break;
++                    break;
+ 
+                 case 'footer':
+                     this.footerTemplate = item.template;
+-                break;
++                    break;
+ 
+                 case 'emptyfilter':
+                     this.emptyFilterTemplate = item.template;
+-                break;
++                    break;
+ 
+                 case 'empty':
+                     this.emptyTemplate = item.template;
+-                break;
++                    break;
+ 
+                 case 'group':
+                     this.groupTemplate = item.template;
+-                break;
++                    break;
+ 
+                 default:
+                     this.itemTemplate = item.template;
+-                break;
++                    break;
+             }
+         });
+     }
+@@ -439,7 +441,7 @@ export class Dropdown implements OnInit,AfterViewInit,AfterContentInit,AfterView
+         this.activateFilter();
+     }
+ 
+-    ngAfterViewInit() {
++    ngAfterViewInit() {
+         if (this.editable) {
+             this.updateEditableLabel();
+         }
+@@ -459,7 +461,7 @@ export class Dropdown implements OnInit,AfterViewInit,AfterContentInit,AfterView
+ 
+     updateEditableLabel(): void {
+         if (this.editableInputViewChild && this.editableInputViewChild.nativeElement) {
+-            this.editableInputViewChild.nativeElement.value = (this.selectedOption ? this.getOptionLabel(this.selectedOption) : this.value||'');
++            this.editableInputViewChild.nativeElement.value = (this.selectedOption ? this.getOptionLabel(this.selectedOption) : this.value || '');
+         }
+     }
+ 
+@@ -614,7 +616,7 @@ export class Dropdown implements OnInit,AfterViewInit,AfterContentInit,AfterView
+     }
+ 
+     isOutsideClicked(event: Event): boolean {
+-        return !(this.el.nativeElement.isSameNode(event.target) || this.el.nativeElement.contains(event.target) || (this.overlay && this.overlay.contains(<Node> event.target)));
++        return !(this.el.nativeElement.isSameNode(event.target) || this.el.nativeElement.contains(event.target) || (this.overlay && this.overlay.contains(<Node>event.target)));
+     }
+ 
+     isEmpty() {
+@@ -678,12 +680,12 @@ export class Dropdown implements OnInit,AfterViewInit,AfterContentInit,AfterView
+                 }
+ 
+                 this.onShow.emit(event);
+-            break;
++                break;
+ 
+             case 'void':
+                 this.onOverlayHide();
+                 this.onHide.emit(event);
+-            break;
++                break;
+         }
+     }
+ 
+@@ -783,7 +785,7 @@ export class Dropdown implements OnInit,AfterViewInit,AfterContentInit,AfterView
+             }
+ 
+             if (!prevEnabledOption) {
+-                for (let i = this.optionsToDisplay.length - 1; i >= index ; i--) {
++                for (let i = this.optionsToDisplay.length - 1; i >= index; i--) {
+                     let option = this.optionsToDisplay[i];
+                     if (this.isOptionDisabled(option)) {
+                         continue;
+@@ -836,7 +838,7 @@ export class Dropdown implements OnInit,AfterViewInit,AfterContentInit,AfterView
+             return;
+         }
+ 
+-        switch(event.which) {
++        switch (event.which) {
+             //down
+             case 40:
+                 if (!this.overlayVisible && event.altKey) {
+@@ -845,7 +847,7 @@ export class Dropdown implements OnInit,AfterViewInit,AfterContentInit,AfterView
+                 else {
+                     if (this.group) {
+                         let selectedItemIndex = this.selectedOption ? this.findOptionGroupIndex(this.getOptionValue(this.selectedOption), this.optionsToDisplay) : -1;
+-                        
++
+                         if (selectedItemIndex !== -1) {
+                             let nextItemIndex = selectedItemIndex.itemIndex + 1;
+                             if (nextItemIndex < (this.getOptionGroupChildren(this.optionsToDisplay[selectedItemIndex.groupIndex]).length)) {
+@@ -873,7 +875,7 @@ export class Dropdown implements OnInit,AfterViewInit,AfterContentInit,AfterView
+ 
+                 event.preventDefault();
+ 
+-            break;
++                break;
+ 
+             //up
+             case 38:
+@@ -904,16 +906,16 @@ export class Dropdown implements OnInit,AfterViewInit,AfterContentInit,AfterView
+                 }
+ 
+                 event.preventDefault();
+-            break;
++                break;
+ 
+             //space
+             case 32:
+             case 32:
+-                if (!this.overlayVisible){
++                if (!this.overlayVisible) {
+                     this.show();
+                     event.preventDefault();
+                 }
+-            break;
++                break;
+ 
+             //enter
+             case 13:
+@@ -922,20 +924,20 @@ export class Dropdown implements OnInit,AfterViewInit,AfterContentInit,AfterView
+                 }
+ 
+                 event.preventDefault();
+-            break;
++                break;
+ 
+             //escape and tab
+             case 27:
+             case 9:
+                 this.hide();
+-            break;
++                break;
+ 
+             //search item based on keyboard input
+             default:
+                 if (search && !event.metaKey) {
+                     this.search(event);
+                 }
+-            break;
++                break;
+         }
+     }
+ 
+@@ -955,7 +957,7 @@ export class Dropdown implements OnInit,AfterViewInit,AfterContentInit,AfterView
+ 
+         let newOption;
+         if (this.group) {
+-            let searchIndex = this.selectedOption ? this.findOptionGroupIndex(this.getOptionValue(this.selectedOption), this.optionsToDisplay) : {groupIndex: 0, itemIndex: 0};
++            let searchIndex = this.selectedOption ? this.findOptionGroupIndex(this.getOptionValue(this.selectedOption), this.optionsToDisplay) : { groupIndex: 0, itemIndex: 0 };
+             newOption = this.searchOptionWithinGroup(searchIndex);
+         }
+         else {
+@@ -1030,7 +1032,7 @@ export class Dropdown implements OnInit,AfterViewInit,AfterContentInit,AfterView
+         let index: number = -1;
+         if (opts) {
+             for (let i = 0; i < opts.length; i++) {
+-                if ((val == null && this.getOptionValue(opts[i]) == null) || ObjectUtils.equals(val, this.getOptionValue(opts[i]), this.dataKey)) {
++                if ((val == null && this.getOptionValue(opts[i]) == null) || ObjectUtils.equals(val, this.getOptionValue(opts[i]), this.dataKey)) {
+                     index = i;
+                     break;
+                 }
+@@ -1055,7 +1057,7 @@ export class Dropdown implements OnInit,AfterViewInit,AfterContentInit,AfterView
+         }
+ 
+         if (itemIndex !== -1) {
+-            return {groupIndex: groupIndex, itemIndex: itemIndex};
++            return { groupIndex: groupIndex, itemIndex: itemIndex };
+         }
+         else {
+             return -1;
+@@ -1093,11 +1095,11 @@ export class Dropdown implements OnInit,AfterViewInit,AfterContentInit,AfterView
+         }
+ 
+         this.optionsChanged = true;
+-        this.onFilter.emit({originalEvent: event, filter: this._filterValue});
++        this.onFilter.emit({ originalEvent: event, filter: this._filterValue });
+     }
+ 
+     activateFilter() {
+-        let searchFields: string[] = (this.filterBy || this.optionLabel || 'label').split(',');
++        let searchFields: string[] = (this.filterBy || this.optionLabel || 'label').split(',');
+ 
+         if (this.options && this.options.length) {
+             if (this.group) {
+@@ -1105,7 +1107,7 @@ export class Dropdown implements OnInit,AfterViewInit,AfterContentInit,AfterView
+                 for (let optgroup of this.options) {
+                     let filteredSubOptions = this.filterService.filter(this.getOptionGroupChildren(optgroup), searchFields, this.filterValue, this.filterMatchMode, this.filterLocale);
+                     if (filteredSubOptions && filteredSubOptions.length) {
+-                        filteredGroups.push({...optgroup, ...{[this.optionGroupChildren]: filteredSubOptions}});
++                        filteredGroups.push({ ...optgroup, ...{ [this.optionGroupChildren]: filteredSubOptions } });
+                     }
+                 }
+ 
+@@ -1166,7 +1168,7 @@ export class Dropdown implements OnInit,AfterViewInit,AfterContentInit,AfterView
+ 
+     onWindowResize() {
+         if (!DomHandler.isAndroid()) {
+-            this.hide();
++            //this.hide();
+         }
+     }
+ 
+@@ -1220,8 +1222,8 @@ export class Dropdown implements OnInit,AfterViewInit,AfterContentInit,AfterView
+ }
+ 
+ @NgModule({
+-    imports: [CommonModule,SharedModule,ScrollingModule,TooltipModule,RippleModule],
+-    exports: [Dropdown,SharedModule,ScrollingModule],
+-    declarations: [Dropdown,DropdownItem]
++    imports: [CommonModule, SharedModule, ScrollingModule, TooltipModule, RippleModule],
++    exports: [Dropdown, SharedModule, ScrollingModule],
++    declarations: [Dropdown, DropdownItem]
+ })
+ export class DropdownModule { }
+diff --git a/src/app/components/editor/editor.ts b/src/app/components/editor/editor.ts
+index 40814ff6a..b921b53b7 100644
+--- a/src/app/components/editor/editor.ts
++++ b/src/app/components/editor/editor.ts
+@@ -3,7 +3,9 @@ import {CommonModule} from '@angular/common';
+ import {SharedModule,Header, PrimeTemplate} from 'primeng/api'
+ import {DomHandler} from 'primeng/dom';
+ import {NG_VALUE_ACCESSOR, ControlValueAccessor} from '@angular/forms';
+-import * as Quill from "quill";
++import * as quill from "quill";
++
++const Quill = quill.default || quill;
+ 
+ export const EDITOR_VALUE_ACCESSOR: any = {
+   provide: NG_VALUE_ACCESSOR,
+@@ -69,19 +71,19 @@ export const EDITOR_VALUE_ACCESSOR: any = {
+     encapsulation: ViewEncapsulation.None
+ })
+ export class Editor implements AfterViewInit,AfterContentInit,ControlValueAccessor {
+-        
++
+     @Output() onTextChange: EventEmitter<any> = new EventEmitter();
+-    
++
+     @Output() onSelectionChange: EventEmitter<any> = new EventEmitter();
+-    
++
+     @ContentChild(Header) toolbar;
+-    
++
+     @Input() style: any;
+-        
++
+     @Input() styleClass: string;
+-    
++
+     @Input() placeholder: string;
+-    
++
+     @Input() formats: string[];
+ 
+     @Input() modules: any;
+@@ -91,28 +93,28 @@ export class Editor implements AfterViewInit,AfterContentInit,ControlValueAccess
+     @Input() scrollingContainer: any;
+ 
+     @Input() debug: string;
+-    
++
+     @Output() onInit: EventEmitter<any> = new EventEmitter();
+ 
+     @ContentChildren(PrimeTemplate) templates: QueryList<any>;
+-    
++
+     value: string;
+-    
++
+     _readonly: boolean;
+-    
++
+     onModelChange: Function = () => {};
+-    
++
+     onModelTouched: Function = () => {};
+-    
++
+     quill: any;
+ 
+     headerTemplate: TemplateRef<any>;
+-    
++
+     constructor(public el: ElementRef) {}
+ 
+     ngAfterViewInit() {
+-        let editorElement = DomHandler.findSingle(this.el.nativeElement ,'div.p-editor-content'); 
+-        let toolbarElement = DomHandler.findSingle(this.el.nativeElement ,'div.p-editor-toolbar'); 
++        let editorElement = DomHandler.findSingle(this.el.nativeElement ,'div.p-editor-content');
++        let toolbarElement = DomHandler.findSingle(this.el.nativeElement ,'div.p-editor-toolbar');
+         let defaultModule  = {toolbar: toolbarElement};
+         let modules = this.modules ? {...defaultModule, ...this.modules} : defaultModule;
+ 
+@@ -126,11 +128,11 @@ export class Editor implements AfterViewInit,AfterContentInit,ControlValueAccess
+             debug: this.debug,
+             scrollingContainer: this.scrollingContainer
+         });
+-                
++
+         if (this.value) {
+             this.quill.setContents(this.quill.clipboard.convert(this.value));
+         }
+-        
++
+         this.quill.on('text-change', (delta, oldContents, source) => {
+             if (source === 'user') {
+                 let html = DomHandler.findSingle(editorElement, '.ql-editor').innerHTML;
+@@ -145,12 +147,12 @@ export class Editor implements AfterViewInit,AfterContentInit,ControlValueAccess
+                     delta: delta,
+                     source: source
+                 });
+-                
++
+                 this.onModelChange(html);
+                 this.onModelTouched();
+             }
+         });
+-        
++
+         this.quill.on('selection-change', (range, oldRange, source) => {
+             this.onSelectionChange.emit({
+                 range: range,
+@@ -158,7 +160,7 @@ export class Editor implements AfterViewInit,AfterContentInit,ControlValueAccess
+                 source: source
+             });
+         });
+-        
++
+         this.onInit.emit({
+             editor: this.quill
+         });
+@@ -173,10 +175,10 @@ export class Editor implements AfterViewInit,AfterContentInit,ControlValueAccess
+             }
+         });
+     }
+-        
++
+     writeValue(value: any) : void {
+         this.value = value;
+-                
++
+         if (this.quill) {
+             if (value)
+                 this.quill.setContents(this.quill.clipboard.convert(value));
+@@ -184,7 +186,7 @@ export class Editor implements AfterViewInit,AfterContentInit,ControlValueAccess
+                 this.quill.setText('');
+         }
+     }
+-    
++
+     registerOnChange(fn: Function): void {
+         this.onModelChange = fn;
+     }
+@@ -192,18 +194,18 @@ export class Editor implements AfterViewInit,AfterContentInit,ControlValueAccess
+     registerOnTouched(fn: Function): void {
+         this.onModelTouched = fn;
+     }
+-    
++
+     getQuill() {
+         return this.quill;
+     }
+-    
++
+     @Input() get readonly(): boolean {
+         return this._readonly;
+     }
+ 
+     set readonly(val:boolean) {
+         this._readonly = val;
+-        
++
+         if (this.quill) {
+             if (this._readonly)
+                 this.quill.disable();
+diff --git a/src/app/components/listbox/listbox.ts b/src/app/components/listbox/listbox.ts
+index 9c9349466..24e7432f5 100644
+--- a/src/app/components/listbox/listbox.ts
++++ b/src/app/components/listbox/listbox.ts
+@@ -65,13 +65,13 @@ export const LISTBOX_VALUE_ACCESSOR: any = {
+                     <ng-container *ngIf="!emptyFilterTemplate && !emptyTemplate; else emptyFilter">
+                         {{emptyFilterMessageLabel}}
+                     </ng-container>
+-                    <ng-container #emptyFilter *ngTemplateOutlet="emptyFilterTemplate || emptyTemplate"></ng-container>
++                    <<ng-template #emptyFilter [ngTemplateOutlet]="emptyFilterTemplate || emptyTemplate"></ng-template>
+                 </li>
+                 <li *ngIf="!hasFilter() && isEmpty(optionsToDisplay)" class="p-listbox-empty-message">
+                     <ng-container *ngIf="!emptyTemplate; else empty">
+                         {{emptyMessageLabel}}
+                     </ng-container>
+-                    <ng-container #empty *ngTemplateOutlet="emptyTemplate"></ng-container>
++                    <<ng-template #empty [ngTemplateOutlet]="emptyTemplate"></ng-template>
+                 </li>
+             </ng-template>
+         </ul>
+diff --git a/src/app/components/menubar/menubar.ts b/src/app/components/menubar/menubar.ts
+index 30acb3586..d84f717e9 100644
+--- a/src/app/components/menubar/menubar.ts
++++ b/src/app/components/menubar/menubar.ts
+@@ -3,17 +3,17 @@ import { CommonModule } from '@angular/common';
+ import { DomHandler } from 'primeng/dom';
+ import { MenuItem, PrimeTemplate } from 'primeng/api';
+ import { RouterModule } from '@angular/router';
+-import { RippleModule } from 'primeng/ripple';  
++import { RippleModule } from 'primeng/ripple';
+ 
+ @Component({
+     selector: 'p-menubarSub',
+     template: `
+-        <ul [ngClass]="{'p-submenu-list': !root, 'p-menubar-root-list': root}" [attr.role]="root ? 'menubar' : 'menu'">
++        <ul [ngClass]="{'p-submenu-list': !root, 'p-menubar-root-list': root}" [attr.role]="root ? 'menubar' : 'menu'" (mouseleave)="onMouseLeave($event)">
+             <ng-template ngFor let-child [ngForOf]="(root ? item : item.items)">
+                 <li *ngIf="child.separator" class="p-menu-separator" [ngClass]="{'p-hidden': child.visible === false}" role="separator">
+                 <li *ngIf="!child.separator" #listItem [ngClass]="{'p-menuitem':true, 'p-menuitem-active': child === activeItem, 'p-hidden': child.visible === false}" [ngStyle]="child.style" [class]="child.styleClass" role="none">
+                     <a *ngIf="!child.routerLink" [attr.href]="child.url" [attr.data-automationid]="child.automationId" [attr.target]="child.target" [attr.title]="child.title" [attr.id]="child.id" role="menuitem"
+-                        (click)="onItemClick($event, child)" (mouseenter)="onItemMouseEnter($event,child)" 
++                        (click)="onItemClick($event, child)" (mouseenter)="onItemMouseEnter($event,child)"
+                          [ngClass]="{'p-menuitem-link':true,'p-disabled':child.disabled}" [attr.tabindex]="child.disabled ? null : '0'" [attr.aria-haspopup]="item.items != null" [attr.aria-expanded]="item === activeItem" pRipple>
+                         <span class="p-menuitem-icon" *ngIf="child.icon" [ngClass]="child.icon"></span>
+                         <span class="p-menuitem-text" *ngIf="child.escape !== false; else htmlLabel">{{child.label}}</span>
+@@ -22,7 +22,7 @@ import { RippleModule } from 'primeng/ripple';
+                     </a>
+                     <a *ngIf="child.routerLink" [routerLink]="child.routerLink" [attr.data-automationid]="child.automationId" [queryParams]="child.queryParams" [routerLinkActive]="'p-menuitem-link-active'" [routerLinkActiveOptions]="child.routerLinkActiveOptions||{exact:false}"
+                         [attr.target]="child.target" [attr.title]="child.title" [attr.id]="child.id" [attr.tabindex]="child.disabled ? null : '0'" role="menuitem"
+-                        (click)="onItemClick($event, child)" (mouseenter)="onItemMouseEnter($event,child)" 
++                        (click)="onItemClick($event, child)" (mouseenter)="onItemMouseEnter($event,child)"
+                         [ngClass]="{'p-menuitem-link':true,'p-disabled':child.disabled}"
+                         [fragment]="child.fragment" [queryParamsHandling]="child.queryParamsHandling" [preserveFragment]="child.preserveFragment" [skipLocationChange]="child.skipLocationChange" [replaceUrl]="child.replaceUrl" [state]="child.state" pRipple>
+                         <span class="p-menuitem-icon" *ngIf="child.icon" [ngClass]="child.icon"></span>
+@@ -51,7 +51,7 @@ export class MenubarSub implements OnDestroy {
+ 
+     @Input() autoDisplay: boolean;
+ 
+-    @Input() get parentActive():boolean 
++    @Input() get parentActive():boolean
+     {
+         return this._parentActive;
+     }
+@@ -92,7 +92,7 @@ export class MenubarSub implements OnDestroy {
+                 item: item
+             });
+         }
+-        
++
+         if (item.items) {
+             if (this.activeItem && item === this.activeItem) {
+                 this.activeItem = null;
+@@ -129,6 +129,17 @@ export class MenubarSub implements OnDestroy {
+         }
+     }
+ 
++    onMouseLeave(event)
++    {
++
++        let element = document.elementFromPoint(event.clientX,event.clientY);
++        if (this.el && !this.el.nativeElement.contains(element)) {
++            this.activeItem = null;
++            this.cd.markForCheck();
++            this.unbindDocumentClickListener();
++        }
++    }
++
+     onLeafClick() {
+         this.activeItem = null;
+         if (this.root) {
+diff --git a/src/app/components/multiselect/multiselect.ts b/src/app/components/multiselect/multiselect.ts
+index ed503b815..5e4c6239e 100644
+--- a/src/app/components/multiselect/multiselect.ts
++++ b/src/app/components/multiselect/multiselect.ts
+@@ -152,13 +152,13 @@ export class MultiSelectItem {
+                                 <ng-container *ngIf="!emptyFilterTemplate && !emptyTemplate; else emptyFilter">
+                                     {{emptyFilterMessageLabel}}
+                                 </ng-container>
+-                                <ng-container #emptyFilter *ngTemplateOutlet="emptyFilterTemplate || emptyTemplate"></ng-container>
++                                <<ng-template #emptyFilter [ngTemplateOutlet]="emptyFilterTemplate || emptyTemplate"></ng-template>
+                             </li>
+                             <li *ngIf="!hasFilter() && emptyOptions" class="p-multiselect-empty-message">
+                                 <ng-container *ngIf="!emptyTemplate; else empty">
+                                     {{emptyMessageLabel}}
+                                 </ng-container>
+-                                <ng-container #empty *ngTemplateOutlet="emptyTemplate"></ng-container>
++                                <ng-template #empty [ngTemplateOutlet]="emptyTemplate"></ng-template>
+                             </li>
+                         </ng-template>
+                     </ul>
+diff --git a/src/app/components/package.json b/src/app/components/package.json
+index 24212cfb7..ced051d4f 100644
+--- a/src/app/components/package.json
++++ b/src/app/components/package.json
+@@ -1,24 +1,27 @@
+ {
+-    "name": "primeng",
+-    "version": "11.4.2",
+-    "repository": {
+-      "type": "git",
+-      "url": "https://github.com/primefaces/primeng"
+-    },
+-    "keywords": [
+-      "angular"
+-    ],
+-    "license": "MIT",
+-    "bugs": {
+-      "url": "https://github.com/primefaces/primeng/issues"
+-    },
+-    "module": "primeng.js",
+-    "typings": "primeng.d.ts",
+-    "peerDependencies": {
+-      "@angular/core": "^7.0.0 || ^8.0.0 || ^9.0.0 || ^10.0.0 || ^11.0.0",
+-      "@angular/common": "^7.0.0 || ^8.0.0 || ^9.0.0 || ^10.0.0 || ^11.0.0",
+-      "@angular/forms": "^7.0.0 || ^8.0.0 || ^9.0.0 || ^10.0.0 || ^11.0.0",
+-      "rxjs": "^6.0.0",
+-      "zone.js": "^0.10.2 || ^0.11.0"
+-    }
+-  }
+\ No newline at end of file
++  "name": "primeng",
++  "version": "11.4.2-AMC-2",
++  "repository": {
++    "type": "git",
++    "url": "https://github.com/primefaces/primeng"
++  },
++  "keywords": [
++    "angular"
++  ],
++  "license": "MIT",
++  "bugs": {
++    "url": "https://github.com/primefaces/primeng/issues"
++  },
++  "module": "primeng.js",
++  "typings": "primeng.d.ts",
++  "peerDependencies": {
++    "@angular/core": "^7.0.0 || ^8.0.0 || ^9.0.0 || ^10.0.0 || ^11.0.0",
++    "@angular/common": "^7.0.0 || ^8.0.0 || ^9.0.0 || ^10.0.0 || ^11.0.0",
++    "@angular/forms": "^7.0.0 || ^8.0.0 || ^9.0.0 || ^10.0.0 || ^11.0.0",
++    "rxjs": "^6.0.0",
++    "zone.js": "^0.10.2 || ^0.11.0"
++  },
++  "publishConfig": {
++    "registry": "https://forge.amc.local/nexus/repository/npm-release/"
++  }
++}
+\ No newline at end of file
+diff --git a/src/app/components/password/password.ts b/src/app/components/password/password.ts
+index 4cf449c5e..ed737a642 100644
+--- a/src/app/components/password/password.ts
++++ b/src/app/components/password/password.ts
+@@ -248,10 +248,10 @@ export const Password_VALUE_ACCESSOR: any = {
+     selector: 'p-password',
+     template: `
+         <div [ngClass]="containerClass()" [ngStyle]="style" [class]="styleClass">
+-            <input #input [attr.id]="inputId" pInputText [ngClass]="inputFieldClass()" [ngStyle]="inputStyle" [class]="inputStyleClass" [attr.type]="inputType()" [attr.placeholder]="placeholder" [value]="value" (input)="onInput($event)" (focus)="onFocus()" 
++            <input #input [attr.id]="inputId" pInputText [ngClass]="inputFieldClass()" [ngStyle]="inputStyle" [class]="inputStyleClass" [attr.type]="inputType()" [attr.placeholder]="placeholder" [value]="value" (input)="onInput($event)" (focus)="onFocus()"
+                 (blur)="onBlur()" (keyup)="onKeyUp($event)" />
+             <i *ngIf="toggleMask" [ngClass]="toggleIconClass()" (click)="onMaskToggle()"></i>
+-            <div #overlay *ngIf="overlayVisible" [ngClass]="'p-password-panel p-component'" 
++            <div #overlay *ngIf="overlayVisible" [ngClass]="'p-password-panel p-component'"
+                 [@overlayAnimation]="{value: 'visible', params: {showTransitionParams: showTransitionOptions, hideTransitionParams: hideTransitionOptions}}" (@overlayAnimation.start)="onAnimationStart($event)">
+                 <ng-container *ngTemplateOutlet="headerTemplate"></ng-container>
+                 <ng-container *ngIf="contentTemplate; else content">
+@@ -288,7 +288,7 @@ export const Password_VALUE_ACCESSOR: any = {
+     encapsulation: ViewEncapsulation.None
+ })
+ export class Password implements AfterContentInit,OnInit {
+-    
++
+     @Input() disabled: boolean;
+ 
+     @Input() promptLabel: string;
+@@ -325,6 +325,8 @@ export class Password implements AfterContentInit,OnInit {
+ 
+     @Input() placeholder: string;
+ 
++    @Input() onFocusMaskToggle : boolean = true;
++
+     @ViewChild('input') input: ElementRef;
+ 
+     contentTemplate: TemplateRef<any>;
+@@ -334,15 +336,15 @@ export class Password implements AfterContentInit,OnInit {
+     headerTemplate: TemplateRef<any>;
+ 
+     @ContentChildren(PrimeTemplate) templates: QueryList<any>;
+-    
++
+     overlayVisible: boolean = false;
+ 
+     meter: any;
+-    
++
+     infoText: string;
+-    
++
+     focused: boolean = false;
+-    
++
+     unmasked: boolean = false;
+ 
+     mediumCheckRegExp: any;
+@@ -380,7 +382,7 @@ export class Password implements AfterContentInit,OnInit {
+                 case 'footer':
+                     this.footerTemplate = item.template;
+                 break;
+-                
++
+                 default:
+                     this.contentTemplate = item.template;
+                 break;
+@@ -443,6 +445,10 @@ export class Password implements AfterContentInit,OnInit {
+         if (this.feedback) {
+             this.overlayVisible = true;
+         }
++
++        if(this.onFocusMaskToggle){
++            this.onMaskToggle();
++        }
+     }
+ 
+     onBlur() {
+@@ -450,6 +456,10 @@ export class Password implements AfterContentInit,OnInit {
+         if (this.feedback) {
+             this.overlayVisible = false;
+         }
++
++        if(this.onFocusMaskToggle){
++            this.onMaskToggle();
++        }
+     }
+ 
+     onKeyUp(event) {
+@@ -462,7 +472,7 @@ export class Password implements AfterContentInit,OnInit {
+             }
+         }
+     }
+-    
++
+     updateUI(value) {
+         let label = null;
+         let meter = null;
+@@ -504,6 +514,7 @@ export class Password implements AfterContentInit,OnInit {
+ 
+     onMaskToggle() {
+         this.unmasked = !this.unmasked;
++        console.log('here');
+     }
+ 
+     testStrength(str) {
+@@ -522,12 +533,12 @@ export class Password implements AfterContentInit,OnInit {
+     writeValue(value: any) : void {
+         if (value === undefined)
+             this.value = null;
+-        else 
++        else
+             this.value = value;
+ 
+         if (this.feedback)
+             this.updateUI(this.value || "");
+-        
++
+         this.cd.markForCheck();
+     }
+ 
+@@ -593,7 +604,7 @@ export class Password implements AfterContentInit,OnInit {
+     }
+ 
+     inputFieldClass() {
+-        return {'p-password-input' : true, 
++        return {'p-password-input' : true,
+                 'p-disabled': this.disabled
+         };
+     }
+diff --git a/src/app/components/picklist/picklist.ts b/src/app/components/picklist/picklist.ts
+index 6e819c2ba..e1f617e96 100644
+--- a/src/app/components/picklist/picklist.ts
++++ b/src/app/components/picklist/picklist.ts
+@@ -1,4 +1,4 @@
+-import { NgModule, Component, ElementRef, AfterContentInit, AfterViewChecked, Input, Output, ContentChildren, QueryList, TemplateRef, EventEmitter, ViewChild, ChangeDetectionStrategy, ViewEncapsulation, ChangeDetectorRef} from '@angular/core';
++import { NgModule, Component, ElementRef, AfterContentInit, AfterViewChecked, Input, Output, ContentChildren, QueryList, TemplateRef, EventEmitter, ViewChild, ChangeDetectionStrategy, ViewEncapsulation, ChangeDetectorRef, forwardRef, HostListener} from '@angular/core';
+ import {CommonModule} from '@angular/common';
+ import {ButtonModule} from 'primeng/button';
+ import {SharedModule,PrimeTemplate,FilterService} from 'primeng/api';
+@@ -6,6 +6,7 @@ import {DomHandler} from 'primeng/dom';
+ import {RippleModule} from 'primeng/ripple';
+ import {CdkDragDrop, DragDropModule, moveItemInArray, transferArrayItem} from '@angular/cdk/drag-drop';
+ import {ObjectUtils, UniqueComponentId} from 'primeng/utils';
++import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
+ 
+ @Component({
+     selector: 'p-pickList',
+@@ -94,9 +95,14 @@ import {ObjectUtils, UniqueComponentId} from 'primeng/utils';
+     `,
+     changeDetection: ChangeDetectionStrategy.OnPush,
+     encapsulation: ViewEncapsulation.None,
+-    styleUrls: ['./picklist.css']
++    styleUrls: ['./picklist.css'],
++    providers : [{
++        provide: NG_VALUE_ACCESSOR,
++        multi: true,
++        useExisting: forwardRef(() => PickList),
++    }]
+ })
+-export class PickList implements AfterViewChecked,AfterContentInit {
++export class PickList implements AfterViewChecked,AfterContentInit, ControlValueAccessor {
+ 
+     @Input() source: any[];
+ 
+@@ -182,6 +188,45 @@ export class PickList implements AfterViewChecked,AfterContentInit {
+ 
+     @ContentChildren(PrimeTemplate) templates: QueryList<any>;
+ 
++    private onChange = (_:any) => {};
++    private onTouched = () => {};
++
++    @HostListener('onMoveToSource')
++    @HostListener('onMoveAllToSource')
++    @HostListener('onMoveAllToTarget')
++    @HostListener('onMoveToTarget')
++    onChangeHandler(){
++        this.onChange(this.target);
++    }
++
++    @HostListener('onBlur')
++    onBlur(){
++        this.onTouched();
++    }
++
++    writeValue(obj: any): void {
++        if(this.target && this.target.length > 0){
++            console.log(this.target);
++            this.moveAllLeft();
++        }else{
++            this.target = [];
++        }
++        this.selectedItemsSource = obj
++        this.moveRight();
++        
++    }
++    registerOnChange(fn: any): void {
++        this.onChange = fn;
++    }
++    registerOnTouched(fn: any): void {
++        this.onTouched = fn;
++    }
++    setDisabledState?(isDisabled: boolean): void {
++        this.disabled = isDisabled;
++        this.cd.detectChanges();
++    }
++
++
+     public itemTemplate: TemplateRef<any>;
+ 
+     public visibleOptionsSource: any[];
+diff --git a/src/app/components/tree/tree.ts b/src/app/components/tree/tree.ts
+index 7fb2d7cac..6bd78621c 100644
+--- a/src/app/components/tree/tree.ts
++++ b/src/app/components/tree/tree.ts
+@@ -1,5 +1,5 @@
+ import {NgModule,Component,Input,AfterContentInit,OnDestroy,Output,EventEmitter,OnInit,OnChanges,
+-    ContentChildren,QueryList,TemplateRef,Inject,ElementRef,forwardRef,ChangeDetectionStrategy,SimpleChanges, ViewEncapsulation, ViewChild} from '@angular/core';
++    ContentChildren,QueryList,TemplateRef,Inject,ElementRef,forwardRef,ChangeDetectionStrategy,SimpleChanges, ViewEncapsulation, ViewChild, HostListener} from '@angular/core';
+ import {CdkVirtualScrollViewport, ScrollingModule} from '@angular/cdk/scrolling';
+ import {Optional} from '@angular/core';
+ import {CommonModule} from '@angular/common';
+@@ -12,6 +12,7 @@ import {BlockableUI} from 'primeng/api';
+ import {ObjectUtils} from 'primeng/utils';
+ import {DomHandler} from 'primeng/dom';
+ import {RippleModule} from 'primeng/ripple';
++import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
+ 
+ @Component({
+     selector: 'p-treeNode',
+@@ -23,12 +24,12 @@ import {RippleModule} from 'primeng/ripple';
+                 <div class="p-treenode-content" [style.paddingLeft]="(level * indentation)  + 'rem'" (click)="onNodeClick($event)" (contextmenu)="onNodeRightClick($event)" (touchend)="onNodeTouchEnd()"
+                     (drop)="onDropNode($event)" (dragover)="onDropNodeDragOver($event)" (dragenter)="onDropNodeDragEnter($event)" (dragleave)="onDropNodeDragLeave($event)"
+                     [draggable]="tree.draggableNodes" (dragstart)="onDragStart($event)" (dragend)="onDragStop($event)" [attr.tabindex]="0"
+-                    [ngClass]="{'p-treenode-selectable':tree.selectionMode && node.selectable !== false,'p-treenode-dragover':draghoverNode, 'p-highlight':isSelected()}" role="treeitem"
++                    [ngClass]="{'p-treenode-selectable':tree.selectionMode && node.selectable !== false && tree.disableAllTree !== true,'p-treenode-dragover':draghoverNode, 'p-highlight':isSelected()}" role="treeitem"
+                     (keydown)="onKeyDown($event)" [attr.aria-posinset]="this.index + 1" [attr.aria-expanded]="this.node.expanded" [attr.aria-selected]="isSelected()" [attr.aria-label]="node.label">
+                     <button type="button" class="p-tree-toggler p-link" (click)="toggle($event)" pRipple tabindex="-1">
+                         <span class="p-tree-toggler-icon pi pi-fw" [ngClass]="{'pi-chevron-right':!node.expanded,'pi-chevron-down':node.expanded}"></span>
+                     </button>
+-                    <div class="p-checkbox p-component" [ngClass]="{'p-checkbox-disabled': node.selectable === false}" *ngIf="tree.selectionMode == 'checkbox'" [attr.aria-checked]="isSelected()">
++                    <div class="p-checkbox p-component" [ngClass]="{'p-checkbox-disabled': node.selectable === false || tree.disableAllTree === true}" *ngIf="tree.selectionMode == 'checkbox'" [attr.aria-checked]="isSelected()">
+                         <div class="p-checkbox-box" [ngClass]="{'p-highlight': isSelected(), 'p-indeterminate': node.partialSelected}">
+                             <span class="p-checkbox-icon pi" [ngClass]="{'pi-check':isSelected(),'pi-minus':node.partialSelected}"></span>
+                         </div>
+@@ -158,7 +159,7 @@ export class UITreeNode implements OnInit {
+         if (this.tree.virtualScroll) {
+             this.tree.updateSerializedValue();
+         }
+-        this.tree.onNodeExpand.emit({originalEvent: event, node: this.node});
++        this.tree.onNodeExpand.emit({ originalEvent: event, node: this.node });
+     }
+ 
+     collapse(event: Event) {
+@@ -166,7 +167,7 @@ export class UITreeNode implements OnInit {
+         if (this.tree.virtualScroll) {
+             this.tree.updateSerializedValue();
+         }
+-        this.tree.onNodeCollapse.emit({originalEvent: event, node: this.node});
++        this.tree.onNodeCollapse.emit({ originalEvent: event, node: this.node });
+     }
+ 
+     onNodeClick(event: MouseEvent) {
+@@ -199,7 +200,7 @@ export class UITreeNode implements OnInit {
+         let isValidDropPointIndex = this.tree.dragNodeTree === this.tree ? (position === 1 || dragNodeIndex !== this.index - 1) : true;
+ 
+         if (this.tree.allowDrop(dragNode, this.node, dragNodeScope) && isValidDropPointIndex) {
+-            let dropParams = {...this.createDropPointEventMetadata(position)};
++            let dropParams = { ...this.createDropPointEventMetadata(position) };
+ 
+             if (this.tree.validateDrop) {
+                 this.tree.onNodeDrop.emit({
+@@ -251,7 +252,7 @@ export class UITreeNode implements OnInit {
+     createDropPointEventMetadata(position) {
+         return {
+             dragNode: this.tree.dragNode,
+-            dragNodeIndex:  this.tree.dragNodeIndex,
++            dragNodeIndex: this.tree.dragNodeIndex,
+             dragNodeSubNodes: this.tree.dragNodeSubNodes,
+             dropNode: this.node,
+             index: this.index,
+@@ -316,7 +317,7 @@ export class UITreeNode implements OnInit {
+             let dragNode = this.tree.dragNode;
+ 
+             if (this.tree.allowDrop(dragNode, this.node, this.tree.dragNodeScope)) {
+-                let dropParams = {...this.createDropNodeEventMetadata()};
++                let dropParams = { ...this.createDropNodeEventMetadata() };
+ 
+                 if (this.tree.validateDrop) {
+                     this.tree.onNodeDrop.emit({
+@@ -349,7 +350,7 @@ export class UITreeNode implements OnInit {
+     createDropNodeEventMetadata() {
+         return {
+             dragNode: this.tree.dragNode,
+-            dragNodeIndex:  this.tree.dragNodeIndex,
++            dragNodeIndex: this.tree.dragNodeIndex,
+             dragNodeSubNodes: this.tree.dragNodeSubNodes,
+             dropNode: this.node
+         };
+@@ -381,13 +382,13 @@ export class UITreeNode implements OnInit {
+         if (this.tree.droppableNodes) {
+             let rect = event.currentTarget.getBoundingClientRect();
+             if (event.x > rect.left + rect.width || event.x < rect.left || event.y >= Math.floor(rect.top + rect.height) || event.y < rect.top) {
+-               this.draghoverNode = false;
++                this.draghoverNode = false;
+             }
+         }
+     }
+ 
+     onKeyDown(event: KeyboardEvent) {
+-        const nodeElement = (<HTMLDivElement> event.target).parentElement.parentElement;
++        const nodeElement = (<HTMLDivElement>event.target).parentElement.parentElement;
+ 
+         if (nodeElement.nodeName !== 'P-TREENODE' || (this.tree.contextMenu && this.tree.contextMenu.containerViewChild.nativeElement.style.display === 'block')) {
+             return;
+@@ -414,7 +415,7 @@ export class UITreeNode implements OnInit {
+                 }
+ 
+                 event.preventDefault();
+-            break;
++                break;
+ 
+             //up arrow
+             case 38:
+@@ -429,7 +430,7 @@ export class UITreeNode implements OnInit {
+                 }
+ 
+                 event.preventDefault();
+-            break;
++                break;
+ 
+             //right arrow
+             case 39:
+@@ -438,7 +439,7 @@ export class UITreeNode implements OnInit {
+                 }
+ 
+                 event.preventDefault();
+-            break;
++                break;
+ 
+             //left arrow
+             case 37:
+@@ -453,17 +454,17 @@ export class UITreeNode implements OnInit {
+                 }
+ 
+                 event.preventDefault();
+-            break;
++                break;
+ 
+             //enter
+             case 13:
+                 this.tree.onNodeClick(event, this.node);
+                 event.preventDefault();
+-            break;
++                break;
+ 
+             default:
+                 //no op
+-            break;
++                break;
+         }
+     }
+ 
+@@ -481,7 +482,7 @@ export class UITreeNode implements OnInit {
+     }
+ 
+     findLastVisibleDescendant(nodeElement) {
+-        const listElement = <HTMLElement> Array.from(nodeElement.children).find(el => DomHandler.hasClass(el, 'p-treenode'));
++        const listElement = <HTMLElement>Array.from(nodeElement.children).find(el => DomHandler.hasClass(el, 'p-treenode'));
+         const childrenListElement = listElement.children[1];
+         if (childrenListElement && childrenListElement.children.length > 0) {
+             const lastChildElement = childrenListElement.children[childrenListElement.children.length - 1];
+@@ -543,7 +544,7 @@ export class UITreeNode implements OnInit {
+                 <ng-container *ngIf="!emptyMessageTemplate; else emptyFilter">
+                     {{emptyMessageLabel}}
+                 </ng-container>
+-                <ng-container #emptyFilter *ngTemplateOutlet="emptyMessageTemplate"></ng-container>
++                <ng-template #emptyFilter [ngTemplateOutlet]="emptyMessageTemplate"></ng-template>
+             </div>
+             <ng-container *ngTemplateOutlet="footerTemplate"></ng-container>
+         </div>
+@@ -559,16 +560,21 @@ export class UITreeNode implements OnInit {
+                 <ng-container *ngIf="!emptyMessageTemplate; else emptyFilter">
+                     {{emptyMessageLabel}}
+                 </ng-container>
+-                <ng-container #emptyFilter *ngTemplateOutlet="emptyMessageTemplate"></ng-container>
++                <ng-template #emptyFilter [ngTemplateOutlet]="emptyMessageTemplate"></ng-template>
+             </div>
+             <ng-container *ngTemplateOutlet="footerTemplate"></ng-container>
+         </div>
+     `,
+     changeDetection: ChangeDetectionStrategy.Default,
+     encapsulation: ViewEncapsulation.None,
+-    styleUrls: ['./tree.css']
++    styleUrls: ['./tree.css'],
++    providers: [{
++        provide: NG_VALUE_ACCESSOR,
++        multi: true,
++        useExisting: forwardRef(() => Tree),
++    }]
+ })
+-export class Tree implements OnInit,AfterContentInit,OnChanges,OnDestroy,BlockableUI {
++export class Tree implements OnInit, AfterContentInit, OnChanges, OnDestroy, BlockableUI, ControlValueAccessor {
+ 
+     @Input() value: TreeNode[];
+ 
+@@ -687,27 +693,91 @@ export class Tree implements OnInit,AfterContentInit,OnChanges,OnDestroy,Blockab
+     public filteredNodes: TreeNode[];
+ 
+     constructor(public el: ElementRef, @Optional() public dragDropService: TreeDragDropService, public config: PrimeNGConfig) {}
++    public onModelChange: Function = () => { };
++
++    public onModelTouched: Function = () => { };
++
++    public disableAllTree: boolean = false;
++
++    writeValue(obj: any): void {
++        // this.selection = [];
++        this.selection = obj;
++
++        this.value.forEach(node => {
++            let countChildInSelection = (node: TreeNode) => {
++                let count = 0;
++                node.children?.forEach(c => {
++                    this.findIndexInSelection(c) != -1 ? count++ : '';
++                });
++                return count;
++            }
++
++            let hasOnePartialChild = (node: TreeNode) => {
++                return node.children?.filter(n => n.partialSelected === true).length > 0;
++            }
++            let recursive = (node: TreeNode[]) => {
++                node?.forEach(n => {
++                    let inSelection = this.findIndexInSelection(n) != -1;
++                    if (inSelection) {
++                        this.propagateDown(n, true);
++                    } else {
++                        recursive(n.children);
++                        let countChild = countChildInSelection(n);
++                        if (countChild != 0 && countChild != n.children?.length || hasOnePartialChild(n)) {
++                            n.partialSelected = true;
++                            n.expanded = true;
++                        }
++                    }
++                })
++
++            }
++            recursive([node]);
++        })
++
++        this.updateSerializedValue();
++    }
++
++    registerOnChange(fn: any): void {
++        this.onModelChange = fn;
++    }
++    registerOnTouched(fn: any): void {
++        this.onModelTouched = fn;
++    }
++    setDisabledState?(isDisabled: boolean): void {
++        this.disableAllTree = isDisabled;
++    }
++
++    @HostListener('selectionChange',['$event'])
++    selectionChangeHandler(event) {
++        this.selection = event;
++        this.onModelChange(event);
++    }
++
++    @HostListener('blur')
++    blurHandler() {
++        this.onModelTouched();
++    }
+ 
+     ngOnInit() {
+         if (this.droppableNodes) {
+             this.dragStartSubscription = this.dragDropService.dragStart$.subscribe(
+-              event => {
+-                this.dragNodeTree = event.tree;
+-                this.dragNode = event.node;
+-                this.dragNodeSubNodes = event.subNodes;
+-                this.dragNodeIndex = event.index;
+-                this.dragNodeScope = event.scope;
+-            });
++                event => {
++                    this.dragNodeTree = event.tree;
++                    this.dragNode = event.node;
++                    this.dragNodeSubNodes = event.subNodes;
++                    this.dragNodeIndex = event.index;
++                    this.dragNodeScope = event.scope;
++                });
+ 
+             this.dragStopSubscription = this.dragDropService.dragStop$.subscribe(
+-              event => {
+-                this.dragNodeTree = null;
+-                this.dragNode = null;
+-                this.dragNodeSubNodes = null;
+-                this.dragNodeIndex = null;
+-                this.dragNodeScope = null;
+-                this.dragHover = false;
+-            });
++                event => {
++                    this.dragNodeTree = null;
++                    this.dragNode = null;
++                    this.dragNodeSubNodes = null;
++                    this.dragNodeIndex = null;
++                    this.dragNodeScope = null;
++                    this.dragHover = false;
++                });
+         }
+     }
+ 
+@@ -762,7 +832,7 @@ export class Tree implements OnInit,AfterContentInit,OnChanges,OnDestroy,Blockab
+ 
+     serializeNodes(parent, nodes, level, visible) {
+         if (nodes && nodes.length) {
+-            for(let node of nodes) {
++            for (let node of nodes) {
+                 node.parent = parent;
+                 const rowNode = {
+                     node: node,
+@@ -780,9 +850,9 @@ export class Tree implements OnInit,AfterContentInit,OnChanges,OnDestroy,Blockab
+     }
+ 
+     onNodeClick(event, node: TreeNode) {
+-        let eventTarget = (<Element> event.target);
++        let eventTarget = (<Element>event.target);
+ 
+-        if (DomHandler.hasClass(eventTarget, 'p-tree-toggler') || DomHandler.hasClass(eventTarget, 'p-tree-toggler-icon')) {
++        if (DomHandler.hasClass(eventTarget, 'p-tree-toggler') || DomHandler.hasClass(eventTarget, 'p-tree-toggler-icon') || this.disableAllTree === true) {
+             return;
+         }
+         else if (this.selectionMode) {
+@@ -806,78 +876,77 @@ export class Tree implements OnInit,AfterContentInit,OnChanges,OnDestroy,Blockab
+                     if (this.propagateSelectionDown)
+                         this.propagateDown(node, false);
+                     else
+-                        this.selection = this.selection.filter((val,i) => i!=index);
++                        this.selection = this.selection.filter((val, i) => i != index);
+ 
+                     if (this.propagateSelectionUp && node.parent) {
+                         this.propagateUp(node.parent, false);
+                     }
+ 
+                     this.selectionChange.emit(this.selection);
+-                    this.onNodeUnselect.emit({originalEvent: event, node: node});
++                    this.onNodeUnselect.emit({ originalEvent: event, node: node });
+                 }
+                 else {
+                     if (this.propagateSelectionDown)
+                         this.propagateDown(node, true);
+                     else
+-                        this.selection = [...this.selection||[],node];
++                        this.selection = [...this.selection || [], node];
+ 
+                     if (this.propagateSelectionUp && node.parent) {
+                         this.propagateUp(node.parent, true);
+                     }
+ 
+                     this.selectionChange.emit(this.selection);
+-                    this.onNodeSelect.emit({originalEvent: event, node: node});
++                    this.onNodeSelect.emit({ originalEvent: event, node: node });
+                 }
+             }
+             else {
+                 let metaSelection = this.nodeTouched ? false : this.metaKeySelection;
+ 
+                 if (metaSelection) {
+-                    let metaKey = (event.metaKey||event.ctrlKey);
++                    let metaKey = (event.metaKey || event.ctrlKey);
+ 
+                     if (selected && metaKey) {
+                         if (this.isSingleSelectionMode()) {
+                             this.selectionChange.emit(null);
+                         }
+                         else {
+-                            this.selection = this.selection.filter((val,i) => i!=index);
++                            this.selection = this.selection.filter((val, i) => i != index);
+                             this.selectionChange.emit(this.selection);
+                         }
+ 
+-                        this.onNodeUnselect.emit({originalEvent: event, node: node});
++                        this.onNodeUnselect.emit({ originalEvent: event, node: node });
+                     }
+                     else {
+                         if (this.isSingleSelectionMode()) {
+                             this.selectionChange.emit(node);
+                         }
+                         else if (this.isMultipleSelectionMode()) {
+-                            this.selection = (!metaKey) ? [] : this.selection||[];
+-                            this.selection = [...this.selection,node];
++                            this.selection = (!metaKey) ? [] : this.selection || [];
++                            this.selection = [...this.selection, node];
+                             this.selectionChange.emit(this.selection);
+                         }
+ 
+-                        this.onNodeSelect.emit({originalEvent: event, node: node});
++                        this.onNodeSelect.emit({ originalEvent: event, node: node });
+                     }
+                 }
+                 else {
+                     if (this.isSingleSelectionMode()) {
+                         if (selected) {
+                             this.selection = null;
+-                            this.onNodeUnselect.emit({originalEvent: event, node: node});
++                            this.onNodeUnselect.emit({ originalEvent: event, node: node });
+                         }
+                         else {
+-                            this.selection = node;
+-                            this.onNodeSelect.emit({originalEvent: event, node: node});
++                            this.onNodeSelect.emit({ originalEvent: event, node: node });
+                         }
+                     }
+                     else {
+                         if (selected) {
+-                            this.selection = this.selection.filter((val,i) => i!=index);
+-                            this.onNodeUnselect.emit({originalEvent: event, node: node});
++                            this.selection = this.selection.filter((val, i) => i != index);
++                            this.onNodeUnselect.emit({ originalEvent: event, node: node });
+                         }
+                         else {
+-                            this.selection = [...this.selection||[],node];
+-                            this.onNodeSelect.emit({originalEvent: event, node: node});
++                            this.selection = [...this.selection || [], node];
++                            this.onNodeSelect.emit({ originalEvent: event, node: node });
+                         }
+                     }
+ 
+@@ -895,7 +964,7 @@ export class Tree implements OnInit,AfterContentInit,OnChanges,OnDestroy,Blockab
+ 
+     onNodeRightClick(event: MouseEvent, node: TreeNode) {
+         if (this.contextMenu) {
+-            let eventTarget = (<Element> event.target);
++            let eventTarget = (<Element>event.target);
+ 
+             if (eventTarget.className && eventTarget.className.indexOf('p-tree-toggler') === 0) {
+                 return;
+@@ -912,7 +981,7 @@ export class Tree implements OnInit,AfterContentInit,OnChanges,OnDestroy,Blockab
+                 }
+ 
+                 this.contextMenu.show(event);
+-                this.onNodeContextMenuSelect.emit({originalEvent: event, node: node});
++                this.onNodeContextMenuSelect.emit({ originalEvent: event, node: node });
+             }
+         }
+     }
+@@ -926,7 +995,7 @@ export class Tree implements OnInit,AfterContentInit,OnChanges,OnDestroy,Blockab
+                 index = areNodesEqual ? 0 : - 1;
+             }
+             else {
+-                for(let i = 0; i  < this.selection.length; i++) {
++                for (let i = 0; i < this.selection.length; i++) {
+                     let selectedNode = this.selection[i];
+                     let areNodesEqual = (selectedNode.key && selectedNode.key === node.key) || selectedNode == node;
+                     if (areNodesEqual) {
+@@ -944,7 +1013,7 @@ export class Tree implements OnInit,AfterContentInit,OnChanges,OnDestroy,Blockab
+         // to synchronize the node option between the filtered nodes and the original nodes(this.value)
+         const _node = this.hasFilteredNodes() ? this.getNodeWithKey(node.key, parentNodes) : null;
+         if (_node) {
+-            _node[option] = value||node[option];
++            _node[option] = value || node[option];
+         }
+     }
+ 
+@@ -971,7 +1040,7 @@ export class Tree implements OnInit,AfterContentInit,OnChanges,OnDestroy,Blockab
+         if (node.children && node.children.length) {
+             let selectedCount: number = 0;
+             let childPartialSelected: boolean = false;
+-            for(let child of node.children) {
++            for (let child of node.children) {
+                 if (this.isSelected(child)) {
+                     selectedCount++;
+                 }
+@@ -981,14 +1050,14 @@ export class Tree implements OnInit,AfterContentInit,OnChanges,OnDestroy,Blockab
+             }
+ 
+             if (select && selectedCount == node.children.length) {
+-                this.selection = [...this.selection||[],node];
++                this.selection = [...this.selection || [], node];
+                 node.partialSelected = false;
+             }
+             else {
+                 if (!select) {
+                     let index = this.findIndexInSelection(node);
+                     if (index >= 0) {
+-                        this.selection = this.selection.filter((val,i) => i!=index);
++                        this.selection = this.selection.filter((val, i) => i != index);
+                     }
+                 }
+ 
+@@ -1011,10 +1080,10 @@ export class Tree implements OnInit,AfterContentInit,OnChanges,OnDestroy,Blockab
+         let index = this.findIndexInSelection(node);
+ 
+         if (select && index == -1) {
+-            this.selection = [...this.selection||[],node];
++            this.selection = [...this.selection || [], node];
+         }
+         else if (!select && index > -1) {
+-            this.selection = this.selection.filter((val,i) => i!=index);
++            this.selection = this.selection.filter((val, i) => i != index);
+         }
+ 
+         node.partialSelected = false;
+@@ -1022,7 +1091,7 @@ export class Tree implements OnInit,AfterContentInit,OnChanges,OnDestroy,Blockab
+         this.syncNodeOption(node, this.filteredNodes, 'partialSelected');
+ 
+         if (node.children && node.children.length) {
+-            for(let child of node.children) {
++            for (let child of node.children) {
+                 this.propagateDown(child, select);
+             }
+         }
+@@ -1073,7 +1142,7 @@ export class Tree implements OnInit,AfterContentInit,OnChanges,OnDestroy,Blockab
+ 
+             if (this.allowDrop(dragNode, null, this.dragNodeScope)) {
+                 let dragNodeIndex = this.dragNodeIndex;
+-                this.value = this.value||[];
++                this.value = this.value || [];
+ 
+                 if (this.validateDrop) {
+                     this.onNodeDrop.emit({
+@@ -1118,7 +1187,7 @@ export class Tree implements OnInit,AfterContentInit,OnChanges,OnDestroy,Blockab
+         if (this.droppableNodes) {
+             let rect = event.currentTarget.getBoundingClientRect();
+             if (event.x > rect.left + rect.width || event.x < rect.left || event.y > rect.top + rect.height || event.y < rect.top) {
+-               this.dragHover = false;
++                this.dragHover = false;
+             }
+         }
+     }
+@@ -1136,7 +1205,7 @@ export class Tree implements OnInit,AfterContentInit,OnChanges,OnDestroy,Blockab
+                 }
+                 else {
+                     let parent = dropNode.parent;
+-                    while(parent != null) {
++                    while (parent != null) {
+                         if (parent === dragNode) {
+                             allow = false;
+                             break;
+@@ -1168,8 +1237,8 @@ export class Tree implements OnInit,AfterContentInit,OnChanges,OnDestroy,Blockab
+                     return (<Array<any>>dropScope).indexOf(dragScope) != -1;
+                 }
+                 else if (dragScope instanceof Array) {
+-                    for(let s of dropScope) {
+-                        for(let ds of dragScope) {
++                    for (let s of dropScope) {
++                        for (let ds of dragScope) {
+                             if (s === ds) {
+                                 return true;
+                             }
+@@ -1194,9 +1263,9 @@ export class Tree implements OnInit,AfterContentInit,OnChanges,OnDestroy,Blockab
+             const searchFields: string[] = this.filterBy.split(',');
+             const filterText = ObjectUtils.removeAccents(filterValue).toLocaleLowerCase(this.filterLocale);
+             const isStrictMode = this.filterMode === 'strict';
+-            for(let node of this.value) {
+-                let copyNode = {...node};
+-                let paramsWithoutNode = {searchFields, filterText, isStrictMode};
++            for (let node of this.value) {
++                let copyNode = { ...node };
++                let paramsWithoutNode = { searchFields, filterText, isStrictMode };
+                 if ((isStrictMode && (this.findFilteredNodes(copyNode, paramsWithoutNode) || this.isFilterMatched(copyNode, paramsWithoutNode))) ||
+                     (!isStrictMode && (this.isFilterMatched(copyNode, paramsWithoutNode) || this.findFilteredNodes(copyNode, paramsWithoutNode)))) {
+                     this.filteredNodes.push(copyNode);
+@@ -1226,7 +1295,7 @@ export class Tree implements OnInit,AfterContentInit,OnChanges,OnDestroy,Blockab
+                 let childNodes = [...node.children];
+                 node.children = [];
+                 for (let childNode of childNodes) {
+-                    let copyChildNode = {...childNode};
++                    let copyChildNode = { ...childNode };
+                     if (this.isFilterMatched(copyChildNode, paramsWithoutNode)) {
+                         matched = true;
+                         node.children.push(copyChildNode);
+@@ -1241,9 +1310,9 @@ export class Tree implements OnInit,AfterContentInit,OnChanges,OnDestroy,Blockab
+         }
+     }
+ 
+-    isFilterMatched(node, {searchFields, filterText, isStrictMode}) {
++    isFilterMatched(node, { searchFields, filterText, isStrictMode }) {
+         let matched = false;
+-        for(let field of searchFields) {
++        for (let field of searchFields) {
+             let fieldValue = ObjectUtils.removeAccents(String(ObjectUtils.resolveFieldData(node, field))).toLocaleLowerCase(this.filterLocale);
+             if (fieldValue.indexOf(filterText) > -1) {
+                 matched = true;
+@@ -1251,14 +1320,14 @@ export class Tree implements OnInit,AfterContentInit,OnChanges,OnDestroy,Blockab
+         }
+ 
+         if (!matched || (isStrictMode && !this.isNodeLeaf(node))) {
+-            matched = this.findFilteredNodes(node, {searchFields, filterText, isStrictMode}) || matched;
++            matched = this.findFilteredNodes(node, { searchFields, filterText, isStrictMode }) || matched;
+         }
+ 
+         return matched;
+     }
+ 
+-    getBlockableElement(): HTMLElement {
+-      return this.el.nativeElement.children[0];
++    getBlockableElement(): HTMLElement {
++        return this.el.nativeElement.children[0];
+     }
+ 
+     ngOnDestroy() {
+@@ -1272,8 +1341,8 @@ export class Tree implements OnInit,AfterContentInit,OnChanges,OnDestroy,Blockab
+     }
+ }
+ @NgModule({
+-    imports: [CommonModule,ScrollingModule,RippleModule],
+-    exports: [Tree,SharedModule,ScrollingModule],
+-    declarations: [Tree,UITreeNode]
++    imports: [CommonModule, ScrollingModule, RippleModule],
++    exports: [Tree, SharedModule, ScrollingModule],
++    declarations: [Tree, UITreeNode]
+ })
+ export class TreeModule { }
+diff --git a/src/app/showcase/components/dataview/dataviewdemo.ts b/src/app/showcase/components/dataview/dataviewdemo.ts
+index 1257f7e2b..8cecdcfa8 100644
+--- a/src/app/showcase/components/dataview/dataviewdemo.ts
++++ b/src/app/showcase/components/dataview/dataviewdemo.ts
+@@ -13,6 +13,8 @@ export class DataViewDemo implements OnInit {
+ 
+     sortOptions: SelectItem[];
+ 
++    sortKey: string;
++
+     sortOrder: number;
+ 
+     sortField: string;
+diff --git a/src/app/showcase/components/dropdown/dropdowndemo.ts b/src/app/showcase/components/dropdown/dropdowndemo.ts
+index f812f382b..dad5a6ea8 100644
+--- a/src/app/showcase/components/dropdown/dropdowndemo.ts
++++ b/src/app/showcase/components/dropdown/dropdowndemo.ts
+@@ -21,7 +21,7 @@ export class DropdownDemo {
+ 
+     selectedCity3: string;
+ 
+-    selectedCountry: string;
++    selectedCountry: any;
+ 
+     countries: any[];
+ 
+diff --git a/src/app/showcase/components/table/tablecruddemo.html b/src/app/showcase/components/table/tablecruddemo.html
+index c5dedd2f5..410d42401 100644
+--- a/src/app/showcase/components/table/tablecruddemo.html
++++ b/src/app/showcase/components/table/tablecruddemo.html
+@@ -13,7 +13,7 @@
+         <p-toolbar styleClass="p-mb-4">
+             <ng-template pTemplate="left">
+                 <button pButton pRipple label="New" icon="pi pi-plus" class="p-button-success p-mr-2" (click)="openNew()"></button>
+-                <button pButton pRipple [label]="Delete" icon="pi pi-trash" class="p-button-danger" (click)="deleteSelectedProducts()" [disabled]="!selectedProducts || !selectedProducts.length"></button>
++                <button pButton pRipple label="Delete" icon="pi pi-trash" class="p-button-danger" (click)="deleteSelectedProducts()" [disabled]="!selectedProducts || !selectedProducts.length"></button>
+             </ng-template>
+     
+             <ng-template pTemplate="right">
+diff --git a/src/app/showcase/components/table/tableselectiondemo.html b/src/app/showcase/components/table/tableselectiondemo.html
+index 1869675c4..96087b895 100644
+--- a/src/app/showcase/components/table/tableselectiondemo.html
++++ b/src/app/showcase/components/table/tableselectiondemo.html
+@@ -62,8 +62,8 @@
+             <ng-template pTemplate="caption">
+                 Multiple Selection without MetaKey
+             </ng-template>
+-            <ng-template pTemplate="header">
+-                <tr [pSelectableRow]="product">
++            <ng-template pTemplate="header" >
++                <tr>
+                     <th>Code</th>
+                     <th>Name</th>
+                     <th>Category</th>
+diff --git a/src/app/showcase/components/table/tablestatedemo.html b/src/app/showcase/components/table/tablestatedemo.html
+index a969d1f76..86deb19bb 100644
+--- a/src/app/showcase/components/table/tablestatedemo.html
++++ b/src/app/showcase/components/table/tablestatedemo.html
+@@ -22,16 +22,16 @@
+                 </tr>
+                 <tr>
+                     <th>
+-                        <input pInputText type="text" (input)="dt1.filter($event.target.value, 'name', 'contains')" [value]="dt1.filters['name']?.value" placeholder="Search by Name" class="p-column-filter">
++                        <input pInputText type="text" (input)="dt1.filter($event.target.value, 'name', 'contains')" [value]="$any(dt1.filters['name'])?.value" placeholder="Search by Name" class="p-column-filter">
+                     </th>
+                     <th>
+-                        <input pInputText type="text" (input)="dt1.filter($event.target.value, 'country.name', 'contains')" [value]="dt1.filters['country.name']?.value" placeholder="Search by Country" class="p-column-filter">
++                        <input pInputText type="text" (input)="dt1.filter($event.target.value, 'country.name', 'contains')" [value]="$any(dt1.filters['country.name'])?.value" placeholder="Search by Country" class="p-column-filter">
+                     </th>
+                     <th>
+-                        <input pInputText type="text" (input)="dt1.filter($event.target.value, 'representative.name', 'contains')" [value]="dt1.filters['representative.name']?.value" placeholder="Search by Representative" class="p-column-filter">
++                        <input pInputText type="text" (input)="dt1.filter($event.target.value, 'representative.name', 'contains')" [value]="$any(dt1.filters['representative.name'])?.value" placeholder="Search by Representative" class="p-column-filter">
+                     </th>
+                     <th>
+-                        <input pInputText type="text" (input)="dt1.filter($event.target.value, 'status', 'contains')" [value]="dt1.filters['status']?.value" placeholder="Search by Status" class="p-column-filter">
++                        <input pInputText type="text" (input)="dt1.filter($event.target.value, 'status', 'contains')" [value]="$any(dt1.filters['status'])?.value" placeholder="Search by Status" class="p-column-filter">
+                     </th>
+                 </tr>
+             </ng-template>
+@@ -78,16 +78,16 @@
+                 </tr>
+                 <tr>
+                     <th>
+-                        <input pInputText type="text" (input)="dt2.filter($event.target.value, 'name', 'contains')" [value]="dt2.filters['name']?.value" placeholder="Search by Name" class="p-column-filter">
++                        <input pInputText type="text" (input)="dt2.filter($event.target.value, 'name', 'contains')" [value]="$any(dt2.filters['name'])?.value" placeholder="Search by Name" class="p-column-filter">
+                     </th>
+                     <th>
+-                        <input pInputText type="text" (input)="dt2.filter($event.target.value, 'country.name', 'contains')" [value]="dt2.filters['country.name']?.value" placeholder="Search by Country" class="p-column-filter">
++                        <input pInputText type="text" (input)="dt2.filter($event.target.value, 'country.name', 'contains')" [value]="$any(dt2.filters['country.name'])?.value" placeholder="Search by Country" class="p-column-filter">
+                     </th>
+                     <th>
+-                        <input pInputText type="text" (input)="dt2.filter($event.target.value, 'representative.name', 'contains')" [value]="dt2.filters['representative.name']?.value" placeholder="Search by Representative" class="p-column-filter">
++                        <input pInputText type="text" (input)="dt2.filter($event.target.value, 'representative.name', 'contains')" [value]="$any(dt2.filters['representative.name'])?.value" placeholder="Search by Representative" class="p-column-filter">
+                     </th>
+                     <th>
+-                        <input pInputText type="text" (input)="dt2.filter($event.target.value, 'status', 'contains')" [value]="dt2.filters['status']?.value" placeholder="Search by Status" class="p-column-filter">
++                        <input pInputText type="text" (input)="dt2.filter($event.target.value, 'status', 'contains')" [value]="$any(dt2.filters['status'])?.value" placeholder="Search by Status" class="p-column-filter">
+                     </th>
+                 </tr>
+             </ng-template>

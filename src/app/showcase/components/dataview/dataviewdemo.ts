@@ -13,6 +13,8 @@ export class DataViewDemo implements OnInit {
 
     sortOptions: SelectItem[];
 
+    sortKey: string;
+
     sortOrder: number;
 
     sortField: string;

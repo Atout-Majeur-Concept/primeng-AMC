@@ -325,6 +325,8 @@ export class Password implements AfterContentInit,OnInit {
 
     @Input() placeholder: string;
 
+    @Input() onFocusMaskToggle : boolean = true;
+
     @ViewChild('input') input: ElementRef;
 
     contentTemplate: TemplateRef<any>;
@@ -443,12 +445,20 @@ export class Password implements AfterContentInit,OnInit {
         if (this.feedback) {
             this.overlayVisible = true;
         }
+
+        if(this.onFocusMaskToggle){
+            this.onMaskToggle();
+        }
     }
 
     onBlur() {
         this.focused = false;
         if (this.feedback) {
             this.overlayVisible = false;
+        }
+
+        if(this.onFocusMaskToggle){
+            this.onMaskToggle();
         }
     }
 
@@ -504,6 +514,7 @@ export class Password implements AfterContentInit,OnInit {
 
     onMaskToggle() {
         this.unmasked = !this.unmasked;
+        console.log('here');
     }
 
     testStrength(str) {

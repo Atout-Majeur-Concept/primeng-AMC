@@ -1,15 +1,17 @@
-import {ScrollingModule, CdkVirtualScrollViewport} from '@angular/cdk/scrolling';
-import {NgModule,Component,ElementRef,OnInit,AfterViewInit,AfterContentInit,AfterViewChecked,OnDestroy,Input,Output,Renderer2,EventEmitter,ContentChildren,
-        QueryList,ViewChild,TemplateRef,forwardRef,ChangeDetectorRef,NgZone,ViewRef,ChangeDetectionStrategy, ViewEncapsulation} from '@angular/core';
-import {trigger,style,transition,animate,AnimationEvent} from '@angular/animations';
-import {CommonModule} from '@angular/common';
-import {PrimeNGConfig, SelectItem, TranslationKeys} from 'primeng/api';
-import {SharedModule,PrimeTemplate, FilterService} from 'primeng/api';
-import {DomHandler, ConnectedOverlayScrollHandler} from 'primeng/dom';
-import {ObjectUtils} from 'primeng/utils';
-import {NG_VALUE_ACCESSOR, ControlValueAccessor} from '@angular/forms';
-import {TooltipModule} from 'primeng/tooltip';
-import {RippleModule} from 'primeng/ripple';
+import { ScrollingModule, CdkVirtualScrollViewport } from '@angular/cdk/scrolling';
+import {
+    NgModule, Component, ElementRef, OnInit, AfterViewInit, AfterContentInit, AfterViewChecked, OnDestroy, Input, Output, Renderer2, EventEmitter, ContentChildren,
+    QueryList, ViewChild, TemplateRef, forwardRef, ChangeDetectorRef, NgZone, ViewRef, ChangeDetectionStrategy, ViewEncapsulation
+} from '@angular/core';
+import { trigger, style, transition, animate, AnimationEvent } from '@angular/animations';
+import { CommonModule } from '@angular/common';
+import { PrimeNGConfig, SelectItem, TranslationKeys } from 'primeng/api';
+import { SharedModule, PrimeTemplate, FilterService } from 'primeng/api';
+import { DomHandler, ConnectedOverlayScrollHandler } from 'primeng/dom';
+import { ObjectUtils } from 'primeng/utils';
+import { NG_VALUE_ACCESSOR, ControlValueAccessor } from '@angular/forms';
+import { TooltipModule } from 'primeng/tooltip';
+import { RippleModule } from 'primeng/ripple';
 
 export const DROPDOWN_VALUE_ACCESSOR: any = {
   provide: NG_VALUE_ACCESSOR,
@@ -122,13 +124,13 @@ export class DropdownItem {
                             <ng-container *ngIf="!emptyFilterTemplate && !emptyTemplate; else emptyFilter">
                                 {{emptyFilterMessageLabel}}
                             </ng-container>
-                            <ng-container #emptyFilter *ngTemplateOutlet="emptyFilterTemplate || emptyTemplate"></ng-container>
+                            <ng-template #emptyFilter [ngTemplateOutlet]="emptyFilterTemplate || emptyTemplate"></ng-template>
                         </li>
                         <li *ngIf="!filterValue && isEmpty()" class="p-dropdown-empty-message">
                             <ng-container *ngIf="!emptyTemplate; else empty">
                                 {{emptyMessageLabel}}
                             </ng-container>
-                            <ng-container #empty *ngTemplateOutlet="emptyTemplate"></ng-container>
+                            <ng-template #empty [ngTemplateOutlet]="emptyTemplate"></ng-template>
                         </li>
                     </ul>
                 </div>
@@ -139,7 +141,7 @@ export class DropdownItem {
     animations: [
         trigger('overlayAnimation', [
             transition(':enter', [
-                style({opacity: 0, transform: 'scaleY(0.8)'}),
+                style({ opacity: 0, transform: 'scaleY(0.8)' }),
                 animate('{{showTransitionParams}}')
             ]),
             transition(':leave', [
@@ -156,7 +158,7 @@ export class DropdownItem {
     encapsulation: ViewEncapsulation.None,
     styleUrls: ['./dropdown.css']
 })
-export class Dropdown implements OnInit,AfterViewInit,AfterContentInit,AfterViewChecked,OnDestroy,ControlValueAccessor {
+export class Dropdown implements OnInit, AfterViewInit, AfterContentInit, AfterViewChecked, OnDestroy, ControlValueAccessor {
 
     @Input() scrollHeight: string = '200px';
 
@@ -322,9 +324,9 @@ export class Dropdown implements OnInit,AfterViewInit,AfterContentInit,AfterView
 
     value: any;
 
-    onModelChange: Function = () => {};
+    onModelChange: Function = () => { };
 
-    onModelTouched: Function = () => {};
+    onModelTouched: Function = () => { };
 
     optionsToDisplay: any[];
 
@@ -370,7 +372,7 @@ export class Dropdown implements OnInit,AfterViewInit,AfterContentInit,AfterView
 
     preventModelTouched: boolean;
 
-    constructor(public el: ElementRef, public renderer: Renderer2, public cd: ChangeDetectorRef, public zone: NgZone, public filterService: FilterService, public config: PrimeNGConfig) {}
+    constructor(public el: ElementRef, public renderer: Renderer2, public cd: ChangeDetectorRef, public zone: NgZone, public filterService: FilterService, public config: PrimeNGConfig) { }
 
     ngAfterContentInit() {
         this.templates.forEach((item) => {
@@ -1166,7 +1168,7 @@ export class Dropdown implements OnInit,AfterViewInit,AfterContentInit,AfterView
 
     onWindowResize() {
         if (!DomHandler.isAndroid()) {
-            this.hide();
+            //this.hide();
         }
     }
 

@@ -1,6 +1,6 @@
-import {NgModule,Component,ElementRef,AfterViewInit,OnDestroy,Input,Output,EventEmitter,ChangeDetectionStrategy, ViewEncapsulation} from '@angular/core';
-import {CommonModule} from '@angular/common';
-import * as Chart from 'chart.js';
+import { NgModule, Component, ElementRef, AfterViewInit, OnDestroy, Input, Output, EventEmitter, ChangeDetectionStrategy, ViewEncapsulation } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { Chart } from 'chart.js';
 
 @Component({
     selector: 'p-chart',
@@ -34,13 +34,13 @@ export class UIChart implements AfterViewInit, OnDestroy {
 
     chart: any;
 
-    constructor(public el: ElementRef) {}
+    constructor(public el: ElementRef) { }
     
     @Input() get data(): any {
         return this._data;
     }
 
-    set data(val:any) {
+    set data(val: any) {
         this._data = val;
         this.reinit();
     }
@@ -49,7 +49,7 @@ export class UIChart implements AfterViewInit, OnDestroy {
         return this._options;
     }
 
-    set options(val:any) {
+    set options(val: any) {
         this._options = val;
         this.reinit();
     }
@@ -64,17 +64,17 @@ export class UIChart implements AfterViewInit, OnDestroy {
             let element = this.chart.getElementAtEvent(event);
             let dataset = this.chart.getDatasetAtEvent(event);
             if (element && element[0] && dataset) {
-                this.onDataSelect.emit({originalEvent: event, element: element[0], dataset: dataset});
+                this.onDataSelect.emit({ originalEvent: event, element: element[0], dataset: dataset });
             }
         }
     }
 
     initChart() {
-        let opts = this.options||{};
+        let opts = this.options || {};
         opts.responsive = this.responsive;
 
         // allows chart to resize in responsive mode
-        if (opts.responsive&&(this.height||this.width)) {
+        if (opts.responsive && (this.height || this.width)) {
             opts.maintainAspectRatio = false;
         }
 

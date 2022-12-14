@@ -21,7 +21,7 @@ export class DropdownDemo {
 
     selectedCity3: string;
 
-    selectedCountry: string;
+    selectedCountry: any;
 
     countries: any[];
 

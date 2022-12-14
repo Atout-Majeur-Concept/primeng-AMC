@@ -76,7 +76,7 @@ export const AUTOCOMPLETE_VALUE_ACCESSOR: any = {
                             <ng-container *ngIf="!emptyTemplate; else empty">
                                 {{emptyMessageLabel}}
                             </ng-container>
-                            <ng-container #empty *ngTemplateOutlet="emptyTemplate"></ng-container>
+                            <ng-template #empty [ngTemplateOutlet]="emptyTemplate"></ng-template>
                         </li>
                     </ng-template>
                 </ul>
