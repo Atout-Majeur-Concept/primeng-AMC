@@ -567,7 +567,7 @@ export class UITreeNode implements OnInit {
     `,
     changeDetection: ChangeDetectionStrategy.Default,
     encapsulation: ViewEncapsulation.None,
-    styleUrls: ['./tree.css']
+    styleUrls: ['./tree.css'],
     providers: [{
         provide: NG_VALUE_ACCESSOR,
         multi: true,
