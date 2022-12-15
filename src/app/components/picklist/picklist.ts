@@ -95,7 +95,7 @@ import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
     `,
     changeDetection: ChangeDetectionStrategy.OnPush,
     encapsulation: ViewEncapsulation.None,
-    styleUrls: ['./picklist.css']
+    styleUrls: ['./picklist.css'],
     providers : [{
         provide: NG_VALUE_ACCESSOR,
         multi: true,
